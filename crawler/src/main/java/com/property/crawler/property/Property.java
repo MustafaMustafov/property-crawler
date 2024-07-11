@@ -12,15 +12,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Property {
+
     private String title;
     private PropertyType propertyType;
     private ConstructionType constructionType;
+    private String city;
     private String location;
     private Double cleanSize;
     private Double totalSize;
     private Integer bathCount;
     private Boolean garageOrParking;
-    private Integer floorNumber;
+    private String floorNumber;
     private String price;
-    private String detailsUrl;
+    private String pricePerSqM;
+    private String description;
 }

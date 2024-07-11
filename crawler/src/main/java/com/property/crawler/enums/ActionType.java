@@ -15,8 +15,10 @@ public enum ActionType {
     }
 
     public static String getValueById(int id) {
-        for(ActionType e : values()) {
-            if(e.id==id) return e.value;
+        for (ActionType e : values()) {
+            if (e.id == id) {
+                return e.value;
+            }
         }
         return UNKNOWN.value;
     }

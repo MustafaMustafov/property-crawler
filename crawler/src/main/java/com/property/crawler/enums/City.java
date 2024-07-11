@@ -1,5 +1,7 @@
 package com.property.crawler.enums;
 
+import java.util.Objects;
+
 public enum City {
     BLAGOEVGRAD("Благоевград"),
     BURGAS("Бургас"),
@@ -38,4 +40,15 @@ public enum City {
     public String getCityName() {
         return cityName;
     }
+
+    public static String getByCityName(String cityName) {
+        for (City city : City.values()) {
+            if (Objects.equals(city.cityName, cityName)) {
+                return city.getCityName();
+            }
+        }
+        return "Not found";
+
+    }
+
 }

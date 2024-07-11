@@ -45,11 +45,4 @@ public class PropertySearchDto {
 
         return sb.toString();
     }
-
-    private String encodeParameter(String param) throws UnsupportedEncodingException {
-        if (param == null) {
-            return "";
-        }
-        return URLEncoder.encode(param, "UTF-8");
-    }
 }
