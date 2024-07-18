@@ -4,17 +4,26 @@ import com.property.crawler.enums.City;
 import com.property.crawler.enums.ConstructionType;
 import com.property.crawler.enums.PropertyType;
 import com.property.crawler.property.Property;
+import com.property.crawler.property.PropertyDto;
 import com.property.crawler.property.PropertySearchDto;
+import com.property.crawler.property.mapper.PropertyMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +33,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImotBGService {
 
-    public void getProperty(int actionTypeId, int propertyTypeId, String city, String location, int propertySize) {
+    public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
+        int propertySize) {
+        List<PropertyDto> propertyList = new ArrayList<>();
         try {
             String imotBgUrl = "https://www.imot.bg/pcgi/imot.cgi";
 
@@ -36,10 +47,6 @@ public class ImotBGService {
             con.setRequestMethod("GET");
 
             con.setRequestProperty("User-Agent", "Mozilla/5.0");
-            System.out.println("Request URL: " + obj);
-
-            int responseCode = con.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -51,12 +58,12 @@ public class ImotBGService {
             in.close();
 
             Set<String> hrefs = extractHrefs(response.toString());
-            System.out.println(getPropertyInformations(hrefs, propertyTypeId));
-            hrefs.forEach(System.out::println);
+            propertyList = getPropertyInformations(hrefs, propertyTypeId);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return propertyList;
     }
 
     private Set<String> extractHrefs(String html) {
@@ -83,20 +90,23 @@ public class ImotBGService {
     }
 
 
-    public static List<Property> getPropertyInformations(Set<String> urls, int propertTypeId) {
+    public static List<PropertyDto> getPropertyInformations(Set<String> urls, int propertTypeId) {
         List<Property> propertyList = new ArrayList<>();
         urls.forEach(url -> {
             try {
                 Property property = new Property();
-                Document doc = Jsoup.connect("https:" + url).get();
+                String urlToVisit = "https:" + url;
+                Document doc = Jsoup.connect(urlToVisit).get();
                 property.setPropertyType(PropertyType.getById(propertTypeId));
 
                 extractTitle(doc, property);
+                extractPublicationDateTime(doc, property);
                 extractLocation(doc, property);
                 extractPrice(doc, property);
                 extractPricePerSqM(doc, property);
                 extractDetails(doc, property);
                 extractDescription(doc, property);
+                property.setPropertyUrl(urlToVisit);
 
                 propertyList.add(property);
 
@@ -104,7 +114,48 @@ public class ImotBGService {
                 e.printStackTrace();
             }
         });
-        return propertyList;
+        return PropertyMapper.toDtos(propertyList);
+    }
+
+    public static void extractPublicationDateTime(Document doc, Property property) {
+        Element infoElement = doc.select("div.info > div:contains(Публикувана)").first();
+        boolean isUpdated = false;
+        if (infoElement == null) {
+            infoElement = doc.select("div.info > div:contains(Коригирана)").first();
+            isUpdated = true;
+        }
+        if (infoElement != null) {
+            Pattern dateTimePattern;
+            String infoText = infoElement.text();
+            if (!isUpdated) {
+                dateTimePattern = Pattern.compile(
+                    "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+            } else {
+                dateTimePattern = Pattern.compile(
+                    "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+            }
+            Matcher matcher = dateTimePattern.matcher(infoText);
+
+            if (matcher.find()) {
+                String timeStr = matcher.group(1);
+                String dayStr = matcher.group(2);
+                String monthStr = matcher.group(3);
+                String yearStr = matcher.group(4);
+
+                DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+                LocalTime time = LocalTime.parse(timeStr, timeFormatter);
+
+                DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM", new Locale("bg", "BG"));
+                DateTimeFormatter monthParser = DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH);
+                String monthEnglish = monthParser.format(monthFormatter.parse(monthStr));
+
+                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
+                LocalDate date = LocalDate.parse(dayStr + " " + monthEnglish + " " + yearStr, dateFormatter);
+
+                LocalDateTime dateTime = LocalDateTime.of(date, time);
+                property.setPublicationDateAndTime(dateTime);
+            }
+        }
     }
 
     private static void extractTitle(Document doc, Property property) {
@@ -112,7 +163,6 @@ public class ImotBGService {
         if (titleElement != null) {
             String title = titleElement.text();
             property.setTitle(title);
-            System.out.println("Title: " + title);
         }
     }
 
@@ -120,7 +170,6 @@ public class ImotBGService {
         Element locationElement = doc.select("div.location").first();
         if (locationElement != null) {
             String location = locationElement.text();
-            System.out.println("Location: " + location);
             String[] propertyLocation = location.split(",");
             if (propertyLocation.length > 0) {
                 property.setCity(propertyLocation[0].trim());
@@ -135,7 +184,6 @@ public class ImotBGService {
         Element priceElement = doc.select("div.price div#cena").first();
         if (priceElement != null) {
             String price = priceElement.text();
-            System.out.println("Price: " + price);
             property.setPrice(price.trim());
         }
     }
@@ -144,7 +192,6 @@ public class ImotBGService {
         Element pricePerSqMElement = doc.select("div.price span#cenakv").first();
         if (pricePerSqMElement != null) {
             String pricePerSqM = pricePerSqMElement.text();
-            System.out.println("Price per square meter: " + pricePerSqM);
             property.setPricePerSqM(pricePerSqM.trim());
         }
     }
@@ -170,8 +217,6 @@ public class ImotBGService {
                 } else if (detailText.contains("Строителство")) {
                     property.setConstructionType(ConstructionType.getConstructionTypeByValue(detailValue.trim()));
                 }
-
-                System.out.println(detail.text());
             }
         }
     }
@@ -180,7 +225,6 @@ public class ImotBGService {
         Element descriptionElement = doc.select("div#description_div").first();
         if (descriptionElement != null) {
             String description = descriptionElement.text();
-            System.out.println("Description: " + description);
             property.setDescription(description.trim());
         }
     }

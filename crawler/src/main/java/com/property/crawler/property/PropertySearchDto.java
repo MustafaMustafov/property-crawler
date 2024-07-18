@@ -1,16 +1,17 @@
 package com.property.crawler.property;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class PropertySearchDto {
-    private final static String WINDOWS_1251="Windows-1251";
+
+    private final static String WINDOWS_1251 = "Windows-1251";
     private final int act = 17;
     private final int actions = 2;
     private int actionType;//f1

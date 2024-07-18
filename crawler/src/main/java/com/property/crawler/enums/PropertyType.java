@@ -48,4 +48,7 @@ public enum PropertyType {
         return UNKNOWN;
     }
 
+    public int getId() {
+        return id;
+    }
 }
