@@ -1,25 +1,28 @@
 package com.property.crawler.property;
 
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class PropertyDto {
+@NoArgsConstructor
+@ToString
+public class PropertyDtoFormVersion {
 
     private String city;
     private String location;
+    private int actionType;
     private int propertyType;
     private int propertySize;
     private int numberOfRooms;
     private int numberOfBedrooms;
     private int numberOfBathrooms;
-    private String hasGarage;
-    private String floorInfo;
+    private boolean hasGarage;
     private String orientation;
-    private String price;
-    private LocalDateTime publicationDateAndTime;
-    private String propertyUrl;
+    private int price;
+
 }
