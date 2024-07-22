@@ -1,4 +1,4 @@
-FROM openjdk:21-slim
+FROM openjdk:17-oracle
 WORKDIR /app
 COPY target/crawler-0.0.1-SNAPSHOT.jar /app
 EXPOSE 8080
