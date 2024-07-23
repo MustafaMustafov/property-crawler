@@ -38,46 +38,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImotBGService {
 
-//    public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
-//        int propertySize) {
-//        List<PropertyDto> propertyList = new ArrayList<>();
-//        try {
-//            String imotBgUrl = "https://www.imot.bg/pcgi/imot.cgi";
-//
-//            String searchUrl = buildSearchPropertyUrl(imotBgUrl,
-//                new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
-//
-//            URL obj = new URL(searchUrl);
-//            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-//            con.setRequestMethod("GET");
-//
-////            con.setRequestProperty("User-Agent", "Mozilla/5.0");
-//
-//            con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
-//            con.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-//            con.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
-//            con.setRequestProperty("Connection", "keep-alive");
-//
-//
-//            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-//            StringBuilder response = new StringBuilder();
-//            String inputLine;
-//
-//            while ((inputLine = in.readLine()) != null) {
-//                response.append(inputLine);
-//            }
-//            in.close();
-//
-//            Set<String> hrefs = extractHrefs(response.toString());
-//            propertyList = getPropertyInformations(hrefs, propertyTypeId);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return propertyList;
-//    }
-
-    public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location, int propertySize) {
+    public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
+        int propertySize) {
         List<PropertyDto> propertyList = new ArrayList<>();
 
         try {
@@ -87,21 +49,20 @@ public class ImotBGService {
 
             URL obj = new URL(searchUrl);
 
-            // Set up a proxy (example proxy settings)
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("195.201.126.184", 80));
 
             HttpURLConnection con = (HttpURLConnection) obj.openConnection(proxy);
             con.setRequestMethod("GET");
 
-            // Set User-Agent and other headers
-            con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
-            con.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
+            con.setRequestProperty("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+            con.setRequestProperty("Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
             con.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
             con.setRequestProperty("Connection", "keep-alive");
             con.setRequestProperty("Cache-Control", "no-cache");
             con.setRequestProperty("Pragma", "no-cache");
 
-            // Handle cookies
             CookieManager cookieManager = new CookieManager();
             cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
             java.net.CookieHandler.setDefault(cookieManager);
@@ -119,16 +80,6 @@ public class ImotBGService {
 
                 Set<String> hrefs = extractHrefs(response.toString());
                 propertyList = getPropertyInformations(hrefs, propertyTypeId);
-            } else {
-                System.out.println("GET request not worked. Response Code: " + responseCode);
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-                StringBuilder response = new StringBuilder();
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-                System.out.println("Error response: " + response.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -162,7 +113,8 @@ public class ImotBGService {
 
     public static List<PropertyDto> getPropertyInformations(Set<String> urls, int propertyTypeId) {
         List<Property> propertyList = new ArrayList<>();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("195.201.126.184", 80)); // Replace with a working proxy
+        Proxy proxy = new Proxy(Proxy.Type.HTTP,
+            new InetSocketAddress("195.201.126.184", 80)); // Replace with a working proxy
 
         urls.forEach(url -> {
             try {
@@ -172,7 +124,8 @@ public class ImotBGService {
                 // Set up Jsoup connection with proxy and user-agent
                 Connection connection = Jsoup.connect(urlToVisit)
                     .proxy(proxy)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+                    .userAgent(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
                     .timeout(10000) // 10 seconds timeout
                     .followRedirects(true);
 

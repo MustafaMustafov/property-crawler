@@ -4,7 +4,10 @@ package com.property.crawler.imotbg;
 import com.property.crawler.enums.Neighborhood;
 import com.property.crawler.pdf.PdfService;
 import com.property.crawler.property.PropertyDtoFormVersion;
+import java.io.IOException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,9 +22,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.exceptions.TemplateProcessingException;
 
 @Controller
 public class ImotBGController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ImotBGController.class);
 
     @Autowired
     PdfService pdfService;
@@ -35,15 +41,27 @@ public class ImotBGController {
     @ResponseBody
     public ResponseEntity<byte[]> handleFileUpload(@RequestParam("file") MultipartFile file) {
         try {
-            byte[] updatedPdf = pdfService.getPdfWithFindPropertyData(file);
+            byte[] updatedPdf = pdfService.getPdfWithFoundProperties(file);
+
+            if (updatedPdf == null || updatedPdf.length == 0) {
+                logger.warn("No properties found or failed to generate PDF.");
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("attachment", "Filled-property-template.pdf");
 
             return new ResponseEntity<>(updatedPdf, headers, HttpStatus.OK);
+        } catch (TemplateProcessingException e) {
+            logger.error("Template processing error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (IOException e) {
+            logger.error("I/O error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            logger.error("Unexpected error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -67,14 +85,23 @@ public class ImotBGController {
     public ResponseEntity<byte[]> generatePdf(@ModelAttribute PropertyDtoFormVersion dto) {
         try {
             byte[] pdf = pdfService.createPdfFromForm(dto);
+
+            if (pdf == null || pdf.length == 0) {
+                logger.warn("No properties found or failed to generate PDF.");
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            }
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
             headers.setContentDispositionFormData("attachment", "Filled-property-template.pdf");
 
             return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        } catch (TemplateProcessingException e) {
+            logger.error("Template processing error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (Exception e) {
-            throw new RuntimeException(e);
-
+            logger.error("Unexpected error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

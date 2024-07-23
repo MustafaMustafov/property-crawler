@@ -24,26 +24,29 @@ public class PdfWriterServiceImpl implements PdfWriterService {
     TemplateEngine templateEngine;
 
     @Override
-    public byte[] generatePdf(List<PropertyDto> property, PropertyDto searchProperty) throws Exception {
-        Context context = new Context();
+    public byte[] generatePdf(List<PropertyDto> properties, PropertyDto searchProperty) throws Exception {
+        if (!properties.isEmpty()) {
+            Context context = new Context();
 
-        context.setVariable("searchProperty", searchProperty);
-        for (int i = 0; i < property.size(); i++) {
-            context.setVariable("property" + (i + 1), property.get(i));
+            context.setVariable("searchProperty", searchProperty);
+            for (int i = 0; i < properties.size(); i++) {
+                context.setVariable("property" + (i + 1), properties.get(i));
+            }
+
+            String htmlContent = templateEngine.process("property", context);
+
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                ITextRenderer renderer = new ITextRenderer();
+
+                setupFont(renderer);
+
+                renderer.setDocumentFromString(htmlContent);
+                renderer.layout();
+                renderer.createPDF(outputStream);
+                return outputStream.toByteArray();
+            }
         }
-
-        String htmlContent = templateEngine.process("property", context);
-
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            ITextRenderer renderer = new ITextRenderer();
-
-            setupFont(renderer);
-
-            renderer.setDocumentFromString(htmlContent);
-            renderer.layout();
-            renderer.createPDF(outputStream);
-            return outputStream.toByteArray();
-        }
+        return new byte[0];
     }
 
     private void setupFont(ITextRenderer renderer) throws IOException, com.lowagie.text.DocumentException {
