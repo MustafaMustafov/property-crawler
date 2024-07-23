@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -159,14 +160,24 @@ public class ImotBGService {
     }
 
 
-    public static List<PropertyDto> getPropertyInformations(Set<String> urls, int propertTypeId) {
+    public static List<PropertyDto> getPropertyInformations(Set<String> urls, int propertyTypeId) {
         List<Property> propertyList = new ArrayList<>();
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("195.201.126.184", 80)); // Replace with a working proxy
+
         urls.forEach(url -> {
             try {
                 Property property = new Property();
                 String urlToVisit = "https:" + url;
-                Document doc = Jsoup.connect(urlToVisit).get();
-                property.setPropertyType(PropertyType.getById(propertTypeId));
+
+                // Set up Jsoup connection with proxy and user-agent
+                Connection connection = Jsoup.connect(urlToVisit)
+                    .proxy(proxy)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+                    .timeout(10000) // 10 seconds timeout
+                    .followRedirects(true);
+
+                Document doc = connection.get();
+                property.setPropertyType(PropertyType.getById(propertyTypeId));
 
                 extractTitle(doc, property);
                 extractPublicationDateTime(doc, property);
