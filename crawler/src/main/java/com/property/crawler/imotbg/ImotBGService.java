@@ -11,12 +11,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,7 +22,17 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jsoup.Connection;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,52 +42,55 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImotBGService {
 
+    private static final String PROXY_TUNNEL = "93.152.208.207";
+    private static final int PORT = 50100;
+
     public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
         int propertySize) {
         List<PropertyDto> propertyList = new ArrayList<>();
+        String imotBgUrl = "https://www.imot.bg/pcgi/imot.cgi";
 
         try {
-            String imotBgUrl = "https://www.imot.bg/pcgi/imot.cgi";
             String searchUrl = buildSearchPropertyUrl(imotBgUrl,
                 new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
 
-            URL obj = new URL(searchUrl);
+            HttpHost proxy = new HttpHost("93.152.208.207", 50100, "http");
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(
+                new AuthScope(proxy.getHostName(), proxy.getPort()),
+                new UsernamePasswordCredentials("mmustafovjob", "N3uyNbHydZ")
+            );
 
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("195.201.126.184", 80));
+            CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultCredentialsProvider(credsProvider)
+                .setProxy(proxy)
+                .build();
 
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection(proxy);
-            con.setRequestMethod("GET");
+            HttpGet httpGet = new HttpGet(searchUrl);
+            CloseableHttpResponse response = httpClient.execute(httpGet);
 
-            con.setRequestProperty("User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
-            con.setRequestProperty("Accept",
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-            con.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
-            con.setRequestProperty("Connection", "keep-alive");
-            con.setRequestProperty("Cache-Control", "no-cache");
-            con.setRequestProperty("Pragma", "no-cache");
+            try {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                    StringBuilder responseContent = new StringBuilder();
+                    String inputLine;
 
-            CookieManager cookieManager = new CookieManager();
-            cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-            java.net.CookieHandler.setDefault(cookieManager);
+                    while ((inputLine = in.readLine()) != null) {
+                        responseContent.append(inputLine);
+                    }
+                    in.close();
 
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String inputLine;
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                    Set<String> hrefs = extractHrefs(responseContent.toString());
+                    propertyList = getPropertyInformations(hrefs, propertyTypeId);
                 }
-                in.close();
-
-                Set<String> hrefs = extractHrefs(response.toString());
-                propertyList = getPropertyInformations(hrefs, propertyTypeId);
+            } finally {
+                response.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return propertyList;
     }
 
@@ -110,43 +117,56 @@ public class ImotBGService {
         return url + "?" + propertySearchDto.toQueryString();
     }
 
-
     public static List<PropertyDto> getPropertyInformations(Set<String> urls, int propertyTypeId) {
         List<Property> propertyList = new ArrayList<>();
-        Proxy proxy = new Proxy(Proxy.Type.HTTP,
-            new InetSocketAddress("195.201.126.184", 80)); // Replace with a working proxy
 
-        urls.forEach(url -> {
-            try {
-                Property property = new Property();
-                String urlToVisit = "https:" + url;
+        HttpHost proxy = new HttpHost(PROXY_TUNNEL, PORT, "http");
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(new AuthScope(PROXY_TUNNEL, PORT),
+            new UsernamePasswordCredentials("mmustafovjob", "N3uyNbHydZ"));
 
-                // Set up Jsoup connection with proxy and user-agent
-                Connection connection = Jsoup.connect(urlToVisit)
-                    .proxy(proxy)
-                    .userAgent(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-                    .timeout(10000) // 10 seconds timeout
-                    .followRedirects(true);
+        try (CloseableHttpClient httpClient = HttpClients.custom()
+            .setDefaultCredentialsProvider(credsProvider)
+            .setProxy(proxy)
+            .build()) {
 
-                Document doc = connection.get();
-                property.setPropertyType(PropertyType.getById(propertyTypeId));
+            for (String url : urls) {
+                try {
+                    Property property = new Property();
+                    String urlToVisit = "https:" + url;
 
-                extractTitle(doc, property);
-                extractPublicationDateTime(doc, property);
-                extractLocation(doc, property);
-                extractPrice(doc, property);
-                extractPricePerSqM(doc, property);
-                extractDetails(doc, property);
-                extractDescription(doc, property);
-                property.setPropertyUrl(urlToVisit);
+                    HttpGet httpGet = new HttpGet(urlToVisit);
+                    httpGet.setHeader("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
 
-                propertyList.add(property);
+                    try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                        HttpEntity entity = response.getEntity();
+                        if (entity != null) {
+                            // Handle response encoding
+                            String content = EntityUtils.toString(entity, "windows-1251");
+                            Document doc = Jsoup.parse(content, "windows-1251");
 
-            } catch (IOException e) {
-                e.printStackTrace();
+                            property.setPropertyType(PropertyType.getById(propertyTypeId));
+                            extractTitle(doc, property);
+                            extractPublicationDateTime(doc, property);
+                            extractLocation(doc, property);
+                            extractPrice(doc, property);
+                            extractPricePerSqM(doc, property);
+                            extractDetails(doc, property);
+                            extractDescription(doc, property);
+                            property.setPropertyUrl(urlToVisit);
+
+                            propertyList.add(property);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return PropertyMapper.toDtos(propertyList);
     }
 
@@ -261,6 +281,4 @@ public class ImotBGService {
             property.setDescription(description.trim());
         }
     }
-
-
 }

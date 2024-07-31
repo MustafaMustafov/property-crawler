@@ -153,62 +153,71 @@
     <td
         style="width:142pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 10pt;text-align: left;">
-        <span th:text="${searchProperty.city} + ', ' + ${searchProperty.location}"></span>
+        <span th:text="${searchProperty.city != null ? (searchProperty.location != null ? searchProperty.city + ', ' + searchProperty.location : searchProperty.city) : (searchProperty.location != null ? searchProperty.location : '')}"></span>
       </p>
     </td>
     <td
         style="width:35pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.propertySize}"></span>
+        <span th:text="${searchProperty.propertySize != null} ? ${searchProperty.propertySize} : ''"></span>
+<!--        <span th:if="${searchProperty.propertySize != null}" th:text="${searchProperty.propertySize}"></span>-->
       </p>
     </td>
     <td
         style="width:36pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.propertySize}"></span>
+        <span th:text="${searchProperty.propertySize != null} ? ${searchProperty.propertySize} : ''"></span>
+<!--        <span th:text="${searchProperty.propertySize}"></span>-->
       </p>
     </td>
     <td
         style="width:42pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.numberOfRooms}"></span>
+        <span th:text="${searchProperty.numberOfRooms != null} ? ${searchProperty.numberOfRooms} : ''"></span>
+<!--        <span th:text="${searchProperty.numberOfRooms}"></span>-->
       </p>
     </td>
     <td
         style="width:40pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.numberOfBedrooms}"></span></p>
+        <span th:text="${searchProperty.numberOfBedrooms != null} ? ${searchProperty.numberOfBedrooms} : ''"></span>
+<!--        <span th:text="${searchProperty.numberOfBedrooms}"></span></p>-->
+      </p>
     </td>
     <td
         style="width:38pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.numberOfBathrooms}"></span>
+        <span th:text="${searchProperty.numberOfBathrooms != null} ? ${searchProperty.numberOfBathrooms} : ''"></span>
+<!--        <span th:text="${searchProperty.numberOfBathrooms}"></span>-->
       </p>
     </td>
     <td
         style="width:50pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.hasGarage}"></span>
+        <span th:text="${searchProperty.hasGarage != null} ? ${searchProperty.hasGarage} : ''"></span>
+<!--        <span th:text="${searchProperty.hasGarage}"></span>-->
       </p>
     </td>
     <td
         style="width:66pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.floorInfo}"></span>
+        <span th:text="${searchProperty.floorInfo != null} ? ${searchProperty.floorInfo} : ''"></span>
+<!--        <span th:text="${searchProperty.floorInfo}"></span>-->
       </p>
     </td>
     <td
         style="width:54pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.orientation}"></span>
+        <span th:text="${searchProperty.orientation != null} ? ${searchProperty.orientation} : ''"></span>
+<!--        <span th:text="${searchProperty.orientation}"></span>-->
       </p>
     </td>
     <td
@@ -219,7 +228,9 @@
         colspan="3">
       <p style="text-indent: 0pt;text-align: left;"><br/></p>
       <p class="s1" style="padding-left: 3pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-        <span th:text="${searchProperty.price}"></span></p>
+        <span th:text="${searchProperty.price != null} ? ${searchProperty.price} : ''"></span>
+<!--        <span th:text="${searchProperty.price}"></span></p>-->
+      </p>
     </td>
   </tr>
   <tr style="height:13pt">
@@ -566,7 +577,7 @@
     <td
         style="width:142pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <a th:href="${property1.propertyUrl}" th:text="${property1.city} + ', ' + ${property1.location}"></a>
+        <a th:href="${property1.propertyUrl}"  th:text="${property1.city != null ? (property1.location != null ? property1.city + ', ' + property1.location : property1.city) : (property1.location != null ? property1.location : '')}"></a>
       </p>
     </td>
     <td
@@ -576,43 +587,43 @@
     <td
         style="width:36pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.propertySize}"></span>
+        <span th:text="${property1.propertySize != null} ? ${property1.propertySize} : ''"></span>
       </p>
     </td>
     <td
         style="width:42pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${searchProperty.numberOfRooms}"></span>
+        <span th:text="${property1.numberOfRooms != null} ? ${property1.numberOfRooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:40pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.numberOfBedrooms}"></span>
+        <span th:text="${property1.numberOfBedrooms != null} ? ${property1.numberOfBedrooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:38pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.numberOfBathrooms}"></span>
+        <span th:text="${property1.numberOfBathrooms != null} ? ${property1.numberOfBathrooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:50pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.hasGarage}"></span>
+        <span th:text="${property1.hasGarage != null} ? ${property1.hasGarage} : ''"></span>
       </p>
     </td>
     <td
         style="width:66pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.floorInfo}"></span>
+        <span th:text="${property1.floorInfo != null} ? ${property1.floorInfo} : ''"></span>
       </p>
     </td>
     <td
         style="width:54pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.orientation}"></span>
+        <span th:text="${property1.orientation != null} ? ${property1.orientation} : ''"></span>
       </p>
     </td>
     <td
@@ -626,13 +637,13 @@
     <td
         style="width:49pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.publicationDateAndTime}"></span>
+        <span th:text="${property1.publicationDateAndTime != null} ? ${property1.publicationDateAndTime} : ''"></span>
       </p>
     </td>
     <td
         style="width:63pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property1.price}"></span>
+        <span th:text="${property1.price != null} ? ${property1.price} : ''"></span>
       </p>
     </td>
   </tr>
@@ -640,7 +651,7 @@
     <td
         style="width:142pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <a th:href="${property2.propertyUrl}" th:text="${property2.city} + ', ' + ${property2.location}"></a>
+        <a th:href="${property2.propertyUrl}" th:text="${property2.city != null ? (property2.location != null ? property2.city + ', ' + property2.location : property2.city) : (property2.location != null ? property2.location : '')}"></a>
       </p>
     </td>
     <td
@@ -650,43 +661,43 @@
     <td
         style="width:36pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.propertySize}"></span>
+        <span th:text="${property2.propertySize != null} ? ${property2.propertySize} : ''"></span>
       </p>
     </td>
     <td
         style="width:42pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${searchProperty.numberOfRooms}"></span>
+        <span th:text="${property2.numberOfRooms != null} ? ${property2.numberOfRooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:40pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.numberOfBedrooms}"></span>
+        <span th:text="${property2.numberOfBedrooms != null} ? ${property2.numberOfBedrooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:38pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.numberOfBathrooms}"></span>
+        <span th:text="${property2.numberOfBathrooms != null} ? ${property2.numberOfBathrooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:50pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.hasGarage}"></span>
+        <span th:text="${property2.hasGarage != null} ? ${property2.hasGarage} : ''"></span>
       </p>
     </td>
     <td
         style="width:66pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.floorInfo}"></span>
+        <span th:text="${property2.floorInfo != null} ? ${property2.floorInfo} : ''"></span>
       </p>
     </td>
     <td
         style="width:54pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.orientation}"></span>
+        <span th:text="${property2.orientation != null} ? ${property2.orientation} : ''"></span>
       </p>
     </td>
     <td
@@ -700,13 +711,13 @@
     <td
         style="width:49pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.publicationDateAndTime}"></span>
+        <span th:text="${property2.publicationDateAndTime != null} ? ${property2.publicationDateAndTime} : ''"></span>
       </p>
     </td>
     <td
         style="width:63pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property2.price}"></span>
+        <span th:text="${property2.price != null} ? ${property2.price} : ''"></span>
       </p>
     </td>
   </tr>
@@ -714,7 +725,7 @@
     <td
         style="width:142pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <a th:href="${property3.propertyUrl}" th:text="${property3.city} + ', ' + ${property3.location}"></a>
+        <a th:href="${property3.propertyUrl}" th:text="${property3.city != null ? (property3.location != null ? property3.city + ', ' + property3.location : property3.city) : (property3.location != null ? property3.location : '')}"></a>
       </p>
     </td>
     <td
@@ -724,43 +735,43 @@
     <td
         style="width:36pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.propertySize}"></span>
+        <span th:text="${property3.propertySize != null} ? ${property3.propertySize} : ''"></span>
       </p>
     </td>
     <td
         style="width:42pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${searchProperty.numberOfRooms}"></span>
+        <span th:text="${property3.numberOfRooms != null} ? ${property3.numberOfRooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:40pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.numberOfBedrooms}"></span>
+        <span th:text="${property3.numberOfBedrooms != null} ? ${property3.numberOfBedrooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:38pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.numberOfBathrooms}"></span>
+        <span th:text="${property3.numberOfBathrooms != null} ? ${property3.numberOfBathrooms} : ''"></span>
       </p>
     </td>
     <td
         style="width:50pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.hasGarage}"></span>
+        <span th:text="${property3.hasGarage != null} ? ${property3.hasGarage} : ''"></span>
       </p>
     </td>
     <td
         style="width:66pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.floorInfo}"></span>
+        <span th:text="${property3.floorInfo != null} ? ${property3.floorInfo} : ''"></span>
       </p>
     </td>
     <td
         style="width:54pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.orientation}"></span>
+        <span th:text="${property3.orientation != null} ? ${property3.orientation} : ''"></span>
       </p>
     </td>
     <td
@@ -774,13 +785,13 @@
     <td
         style="width:49pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.publicationDateAndTime}"></span>
+        <span th:text="${property3.publicationDateAndTime != null} ? ${property3.publicationDateAndTime} : ''"></span>
       </p>
     </td>
     <td
         style="width:63pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
       <p style="text-indent: 0pt;text-align: left;">
-        <span th:text="${property3.price}"></span>
+        <span th:text="${property3.price != null} ? ${property3.price} : ''"></span>
       </p>
     </td>
   </tr>
