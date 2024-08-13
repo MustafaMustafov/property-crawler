@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImotBGService {
 
-    private static final String PROXY_TUNNEL = "93.152.208.207";
+    private static final String PROXY_TUNNEL = "91.92.41.221";
     private static final int PORT = 50100;
 
     public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
@@ -54,7 +54,7 @@ public class ImotBGService {
             String searchUrl = buildSearchPropertyUrl(imotBgUrl,
                 new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
 
-            HttpHost proxy = new HttpHost("93.152.208.207", 50100, "http");
+            HttpHost proxy = new HttpHost(PROXY_TUNNEL, 50100, "http");
             CredentialsProvider credsProvider = new BasicCredentialsProvider();
             credsProvider.setCredentials(
                 new AuthScope(proxy.getHostName(), proxy.getPort()),
