@@ -19,4 +19,12 @@ public enum ConstructionType {
         return UNKNOWN;
     }
 
+    public static String getConstructionValueByType(String constructionType) {
+        for (ConstructionType e: values()) {
+            if (e.value.equalsIgnoreCase(constructionType)){
+                return e.value;
+            }
+        }
+        return UNKNOWN.value;
+    }
 }

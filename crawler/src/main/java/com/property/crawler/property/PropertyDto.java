@@ -2,7 +2,6 @@ package com.property.crawler.property;
 
 import java.time.LocalDateTime;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -13,6 +12,8 @@ public class PropertyDto {
     private String location;
     private int propertyType;
     private int propertySize;
+    private int propertySizeClean;
+    private String constructionType;
     private int numberOfRooms;
     private int numberOfBedrooms;
     private int numberOfBathrooms;

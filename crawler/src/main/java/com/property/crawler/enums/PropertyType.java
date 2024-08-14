@@ -48,7 +48,17 @@ public enum PropertyType {
         return UNKNOWN;
     }
 
+    public static int getIdByValue(String value) {
+        for (PropertyType type : PropertyType.values()) {
+            if (type.value.equalsIgnoreCase(value)) {
+                return type.id;
+            }
+        }
+        return UNKNOWN.id;
+    }
+
     public int getId() {
         return id;
     }
+
 }

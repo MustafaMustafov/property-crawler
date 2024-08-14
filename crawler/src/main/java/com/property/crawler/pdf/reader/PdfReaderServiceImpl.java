@@ -1,5 +1,7 @@
 package com.property.crawler.pdf.reader;
 
+import com.property.crawler.enums.ConstructionType;
+import com.property.crawler.enums.PropertyType;
 import com.property.crawler.imotbg.ImotBGService;
 import com.property.crawler.property.PropertyDto;
 import java.io.ByteArrayInputStream;
@@ -60,20 +62,18 @@ public class PdfReaderServiceImpl implements PdfReaderService {
 
                         String[] cellTexts = rowText.split("\\|");
 
-                        if (cellTexts.length >= 11) {
+                        if (cellTexts.length >= 8) {
                             propertyData.setCity(cellTexts[0].split(",")[0].trim().split(" ")[1]);
                             propertyData.setLocation(cellTexts[0].split(",")[1].trim());
-                            propertyData.setPropertyType(Integer.parseInt(cellTexts[3].trim()));
-                            propertyData.setPropertySize(Integer.parseInt(cellTexts[2].trim()));
-                            propertyData.setNumberOfRooms(Integer.parseInt(cellTexts[3].trim()));
-                            propertyData.setNumberOfBedrooms(Integer.parseInt(cellTexts[4].trim()));
-                            propertyData.setNumberOfBathrooms(Integer.parseInt(cellTexts[5].trim()));
-                            propertyData.setHasGarage(cellTexts[6].trim());
-                            propertyData.setFloorInfo(cellTexts[7].trim());
-                            propertyData.setOrientation(cellTexts[8].trim());
-                            propertyData.setPrice(cellTexts[10].trim());
+                            propertyData.setPropertyType(PropertyType.getIdByValue(cellTexts[1].trim()));
+                            propertyData.setPropertySizeClean(Integer.parseInt(cellTexts[2].trim()));
+                            propertyData.setPropertySize(Integer.parseInt(cellTexts[3].trim()));
+                            propertyData.setConstructionType(
+                                ConstructionType.getConstructionValueByType(cellTexts[4].trim()));
+                            propertyData.setHasGarage(cellTexts[5].trim());
+                            propertyData.setFloorInfo(cellTexts[6].trim());
+                            propertyData.setPrice(cellTexts[7].trim());
                         }
-
                         return propertyData;
                     }
                 }
