@@ -63,16 +63,16 @@ public class PdfReaderServiceImpl implements PdfReaderService {
                         String[] cellTexts = rowText.split("\\|");
 
                         if (cellTexts.length >= 8) {
-                            propertyData.setCity(cellTexts[0].split(",")[0].trim().split(" ")[1]);
-                            propertyData.setLocation(cellTexts[0].split(",")[1].trim());
-                            propertyData.setPropertyType(PropertyType.getIdByValue(cellTexts[1].trim()));
-                            propertyData.setPropertySizeClean(Integer.parseInt(cellTexts[2].trim()));
-                            propertyData.setPropertySize(Integer.parseInt(cellTexts[3].trim()));
+                            propertyData.setCity(cellTexts[0].split(" ")[1].trim());
+                            propertyData.setLocation(cellTexts[1].trim());
+                            propertyData.setPropertyType(PropertyType.getIdByValue(cellTexts[2].trim()));
+                            propertyData.setPropertySizeClean(Integer.parseInt(cellTexts[3].trim()));
+                            propertyData.setPropertySize(Integer.parseInt(cellTexts[4].trim()));
                             propertyData.setConstructionType(
-                                ConstructionType.getConstructionValueByType(cellTexts[4].trim()));
-                            propertyData.setHasGarage(cellTexts[5].trim());
-                            propertyData.setFloorInfo(cellTexts[6].trim());
-                            propertyData.setPrice(cellTexts[7].trim());
+                                ConstructionType.getConstructionValueByType(cellTexts[5].trim()));
+                            propertyData.setHasGarage(cellTexts[6].trim());
+                            propertyData.setFloorInfo(cellTexts[7].trim());
+                            propertyData.setPrice(cellTexts[8].trim());
                         }
                         return propertyData;
                     }
