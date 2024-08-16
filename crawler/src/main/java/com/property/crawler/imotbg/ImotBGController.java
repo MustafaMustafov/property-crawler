@@ -65,6 +65,7 @@ public class ImotBGController {
         }
     }
 
+    // - - - FORM - - -
     @GetMapping("/form")
     public String getSearchingForm(Model model) {
         model.addAttribute("dto", new PropertyDtoFormVersion());
@@ -79,6 +80,7 @@ public class ImotBGController {
     public ResponseEntity<List<String>> getNeighborhoodsByTownName(@PathVariable String townName) {
         return ResponseEntity.ok(Neighborhood.getNeighborhoodsByTown(townName));
     }
+
 
     @PostMapping("/generate-pdf")
     @ResponseBody
@@ -104,4 +106,7 @@ public class ImotBGController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    // - - - END FORM - - -
+
 }

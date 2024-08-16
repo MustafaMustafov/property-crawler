@@ -29,10 +29,13 @@ public class PdfWriterServiceImpl implements PdfWriterService {
             Context context = new Context();
 
             context.setVariable("searchProperty", searchProperty);
-            for (int i = 0; i < properties.size(); i++) {
-                context.setVariable("property" + (i + 1), properties.get(i));
+
+            PropertyDto[] foundProperties = new PropertyDto[5];
+            for (int i = 0; i < properties.size() - 1; i++) {
+                    foundProperties[i] = properties.get(i);
             }
 
+            context.setVariable("properties", foundProperties);
             String htmlContent = templateEngine.process("property", context);
 
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {

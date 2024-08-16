@@ -25,6 +25,7 @@ public class PdfService {
     ImotBGService imotBGService;
 
     public byte[] getPdfWithFoundProperties(MultipartFile multipartFile) throws IOException {
+        // [foundProperties.. , searchProperty]
         List<PropertyDto> propertyList = pdfReaderService.getPropertiesBySearchCriteria(multipartFile);
         PropertyDto searchProperty = propertyList.get(propertyList.size() - 1);
         byte[] newUpdatedPdf;
