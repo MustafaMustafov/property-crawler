@@ -4,6 +4,7 @@ package com.property.crawler.imotbg;
 import com.property.crawler.enums.Neighborhood;
 import com.property.crawler.pdf.PdfService;
 import com.property.crawler.property.PropertyDtoFormVersion;
+import com.property.crawler.word.WordService;
 import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
@@ -29,6 +30,8 @@ public class ImotBGController {
 
     private static final Logger logger = LoggerFactory.getLogger(ImotBGController.class);
 
+    @Autowired
+    WordService wordService;
     @Autowired
     PdfService pdfService;
 
@@ -108,5 +111,34 @@ public class ImotBGController {
     }
 
     // - - - END FORM - - -
+
+    @PostMapping("/generate-word")
+    @ResponseBody
+    public ResponseEntity<byte[]> handleFileUploadReturnWord(@RequestParam("file") MultipartFile file) {
+        try {
+            byte[] updatedPdf = wordService.createWordFileWithFoundProperties(file);
+
+            if (updatedPdf == null || updatedPdf.length == 0) {
+                logger.warn("No properties found or failed to generate PDF.");
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "document.docx");
+
+            return new ResponseEntity<>(updatedPdf, headers, HttpStatus.OK);
+        } catch (TemplateProcessingException e) {
+            logger.error("Template processing error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (IOException e) {
+            logger.error("I/O error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (Exception e) {
+            logger.error("Unexpected error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 
 }
