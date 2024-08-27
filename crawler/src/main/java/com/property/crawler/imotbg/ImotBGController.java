@@ -28,7 +28,12 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
 @Controller
 public class ImotBGController {
 
+    public static final String TEMPLATE_PROCESSING_ERROR = "Template processing error: {}";
     private static final Logger logger = LoggerFactory.getLogger(ImotBGController.class);
+    public static final String NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF = "No properties found or failed to generate PDF.";
+    public static final String ATTACHMENT = "attachment";
+    public static final String UNEXPECTED_ERROR = "Unexpected error: {}";
+    public static final String I_O_ERROR = "I/O error: {}";
 
     @Autowired
     WordService wordService;
@@ -47,23 +52,23 @@ public class ImotBGController {
             byte[] updatedPdf = pdfService.getPdfWithFoundProperties(file);
 
             if (updatedPdf == null || updatedPdf.length == 0) {
-                logger.warn("No properties found or failed to generate PDF.");
+                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
             }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "Filled-property-template.pdf");
+            headers.setContentDispositionFormData(ATTACHMENT, "Filled-property-template.pdf");
 
             return new ResponseEntity<>(updatedPdf, headers, HttpStatus.OK);
         } catch (TemplateProcessingException e) {
-            logger.error("Template processing error: {}", e.getMessage());
+            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (IOException e) {
-            logger.error("I/O error: {}", e.getMessage());
+            logger.error(I_O_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (Exception e) {
-            logger.error("Unexpected error: {}", e.getMessage());
+            logger.error(UNEXPECTED_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -92,20 +97,45 @@ public class ImotBGController {
             byte[] pdf = pdfService.createPdfFromForm(dto);
 
             if (pdf == null || pdf.length == 0) {
-                logger.warn("No properties found or failed to generate PDF.");
+                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
             }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "Filled-property-template.pdf");
+            headers.setContentDispositionFormData(ATTACHMENT, "Filled-property-template.pdf");
 
             return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
         } catch (TemplateProcessingException e) {
-            logger.error("Template processing error: {}", e.getMessage());
+            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (Exception e) {
-            logger.error("Unexpected error: {}", e.getMessage());
+            logger.error(UNEXPECTED_ERROR, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PostMapping("/generate-word-form")
+    @ResponseBody
+    public ResponseEntity<byte[]> generateWordFromForm(@ModelAttribute PropertyDtoFormVersion dto) {
+        try {
+            byte[] wordDoc = wordService.createWordFileWithFoundPropertiesFromForm(dto);
+
+            if (wordDoc == null || wordDoc.length == 0) {
+                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData(ATTACHMENT, "document.docx");
+
+            return new ResponseEntity<>(wordDoc, headers, HttpStatus.OK);
+        } catch (TemplateProcessingException e) {
+            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (Exception e) {
+            logger.error(UNEXPECTED_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -116,26 +146,26 @@ public class ImotBGController {
     @ResponseBody
     public ResponseEntity<byte[]> handleFileUploadReturnWord(@RequestParam("file") MultipartFile file) {
         try {
-            byte[] updatedPdf = wordService.createWordFileWithFoundProperties(file);
+            byte[] wordDoc = wordService.createWordFileWithFoundPropertiesFromPdf(file);
 
-            if (updatedPdf == null || updatedPdf.length == 0) {
-                logger.warn("No properties found or failed to generate PDF.");
+            if (wordDoc == null || wordDoc.length == 0) {
+                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
             }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "document.docx");
+            headers.setContentDispositionFormData(ATTACHMENT, "document.docx");
 
-            return new ResponseEntity<>(updatedPdf, headers, HttpStatus.OK);
+            return new ResponseEntity<>(wordDoc, headers, HttpStatus.OK);
         } catch (TemplateProcessingException e) {
-            logger.error("Template processing error: {}", e.getMessage());
+            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (IOException e) {
-            logger.error("I/O error: {}", e.getMessage());
+            logger.error(I_O_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         } catch (Exception e) {
-            logger.error("Unexpected error: {}", e.getMessage());
+            logger.error(UNEXPECTED_ERROR, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
