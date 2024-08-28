@@ -9,6 +9,7 @@ import com.property.crawler.property.mapper.PropertyDtoFormVersionToPropertyDto;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +26,8 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTShd;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STMerge;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -166,8 +169,8 @@ public class WordService {
     }
 
     private void setLogoAsHeaderLine(XWPFDocument document) throws IOException, InvalidFormatException {
-        try (FileInputStream logoStream = new FileInputStream(
-            resourceLoader.getResource("classpath:/era-logo.png").getFile())) {
+        Resource resource = new ClassPathResource("era-logo.png");
+        try (InputStream logoStream = resource.getInputStream()) {
             XWPFParagraph logoParagraph = document.createParagraph();
             XWPFRun logoRun = logoParagraph.createRun();
             logoRun.addPicture(logoStream, Document.PICTURE_TYPE_PNG, "era-logo.png",
