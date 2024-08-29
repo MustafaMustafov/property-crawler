@@ -239,7 +239,8 @@ public class WordService {
 
     public byte[] getPropertySearchTemplate() throws IOException {
         Resource resource = new ClassPathResource("property-search-template.docx");
-        Path path = resource.getFile().toPath();
-        return Files.readAllBytes(path);
+        try (InputStream templateStream = resource.getInputStream()) {
+            return templateStream.readAllBytes();
+        }
     }
 }
