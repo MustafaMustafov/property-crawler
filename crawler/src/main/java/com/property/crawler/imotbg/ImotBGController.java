@@ -41,7 +41,7 @@ public class ImotBGController {
     PdfService pdfService;
 
     @GetMapping
-    public String getForm() {
+    public String getIndexPage() {
         return "index";
     }
 
@@ -80,6 +80,11 @@ public class ImotBGController {
         model.addAttribute("neighborhoods", Neighborhood.values());
 
         return "form";
+    }
+
+    @GetMapping("/pdf")
+    public String getAttachPdfVariant() {
+        return "attach-pdf";
     }
 
 
