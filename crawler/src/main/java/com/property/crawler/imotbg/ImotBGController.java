@@ -45,6 +45,17 @@ public class ImotBGController {
         return "index";
     }
 
+    @GetMapping("/download-template")
+    @ResponseBody
+    public ResponseEntity<byte[]> getWordTemplate() throws IOException {
+        byte[] wordDoc = wordService.getPropertySearchTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData(ATTACHMENT, "property-search-template.docx");
+
+        return new ResponseEntity<>(wordDoc, headers, HttpStatus.OK);
+    }
+
     @PostMapping("/uploadPdf")
     @ResponseBody
     public ResponseEntity<byte[]> handleFileUpload(@RequestParam("file") MultipartFile file) {

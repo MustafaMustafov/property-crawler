@@ -7,9 +7,10 @@ import com.property.crawler.property.PropertyDto;
 import com.property.crawler.property.PropertyDtoFormVersion;
 import com.property.crawler.property.mapper.PropertyDtoFormVersionToPropertyDto;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,12 +18,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.Document;
+import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFHyperlinkRun;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRelation;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHyperlink;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTShd;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STMerge;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +135,7 @@ public class WordService {
         AtomicInteger i = new AtomicInteger(10);
         foundProperties.forEach(propertyDto -> {
             XWPFTableRow dataRow = table.getRow(i.get());
-            dataRow.getCell(0).setText(propertyDto.getCity());
+            addHyperlinkToCityCell(propertyDto, dataRow);
             dataRow.getCell(1).setText(propertyDto.getLocation());
             dataRow.getCell(2).setText(PropertyType.getValueById(propertyDto.getPropertyType()));
             dataRow.getCell(3).setText(String.valueOf(propertyDto.getPropertySizeClean()));
@@ -146,6 +151,14 @@ public class WordService {
         });
     }
 
+    private static void addHyperlinkToCityCell(PropertyDto propertyDto, XWPFTableRow dataRow) {
+        XWPFParagraph cityParagraph = dataRow.getCell(0).getParagraphs().get(0);
+        XWPFHyperlinkRun hyperlinkrun = createHyperlinkRun(cityParagraph, propertyDto.getPropertyUrl());
+        hyperlinkrun.setText(propertyDto.getCity());
+        hyperlinkrun.setColor("0000FF");
+        hyperlinkrun.setUnderline(UnderlinePatterns.SINGLE);
+    }
+
     private static void setSecondRowForSearchProperty(XWPFTable table, PropertyDto searchProperty) {
         XWPFTableRow dataRow2 = table.getRow(2);
         dataRow2.getCell(0).setText(searchProperty.getCity());
@@ -157,6 +170,23 @@ public class WordService {
         dataRow2.getCell(6).setText(searchProperty.getHasGarage());
         dataRow2.getCell(7).setText(searchProperty.getFloorInfo());
         dataRow2.getCell(8).setText(searchProperty.getPrice());
+    }
+
+    private static XWPFHyperlinkRun createHyperlinkRun(XWPFParagraph paragraph, String uri) {
+        String rId = paragraph.getDocument().getPackagePart().addExternalRelationship(
+            uri,
+            XWPFRelation.HYPERLINK.getRelation()
+        ).getId();
+
+        CTHyperlink cthyperLink = paragraph.getCTP().addNewHyperlink();
+        cthyperLink.setId(rId);
+        cthyperLink.addNewR();
+
+        return new XWPFHyperlinkRun(
+            cthyperLink,
+            cthyperLink.getRArray(0),
+            paragraph
+        );
     }
 
     private static void setCreatedByAndCreatedForLine(XWPFDocument document) {
@@ -205,5 +235,11 @@ public class WordService {
         for (int i = 0; i < headers.length; i++) {
             headerRow.getCell(i).setText(headers[i]);
         }
+    }
+
+    public byte[] getPropertySearchTemplate() throws IOException {
+        Resource resource = new ClassPathResource("property-search-template.docx");
+        Path path = resource.getFile().toPath();
+        return Files.readAllBytes(path);
     }
 }

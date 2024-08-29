@@ -42,7 +42,6 @@
     <div class="mb-3">
       <label for="propertyType" class="form-label">Вид имот:</label>
       <select id="propertyType" name="propertyType" class="form-select" th:field="*{propertyType}" required>
-        <option value="0" disabled></option>
         <option value="1">1-СТАЕН</option>
         <option value="2">2-СТАЕН</option>
         <option value="3">3-СТАЕН</option>
@@ -78,17 +77,22 @@
       <!-- Чиста площ -->
       <div class="col-md-6">
         <label for="usableArea" class="form-label">Чиста площ (кв.м):</label>
-        <input type="number" id="usableArea" name="usableArea" class="form-control" min="0" required>
+        <input type="number" id="usableArea" name="usableArea" class="form-control" value="0" required
+               oninvalid="this.setCustomValidity('Моля, въведете стойност по-голяма от нула.')"
+               oninput="this.setCustomValidity('')"
+        >
       </div>
 
       <!-- Обща площ -->
       <div class="col-md-6">
         <label for="totalArea" class="form-label">Обща площ (кв.м):</label>
-        <input type="number" id="totalArea" name="totalArea" class="form-control" min="0" th:field="*{propertySize}"
-               required>
+        <input type="number" id="totalArea" name="totalArea" class="form-control" min="1" value="0" required
+               oninvalid="this.setCustomValidity('Моля, въведете стойност по-голяма от нула.')"
+               oninput="this.setCustomValidity('')"
+               th:field="*{propertySize}"
+        >
       </div>
     </div>
-
     <!-- Гараж -->
     <div class="form-check mb-3">
       <input class="form-check-input" type="checkbox" id="hasGarage" name="hasGarage" th:field="*{hasGarage}">
@@ -103,7 +107,7 @@
 
     <div class="d-flex justify-content-center">
       <button class="btn btn-lg btn-primary me-3" type="submit">Търси</button>
-      <a href="http://198.199.122.215:8080/" class="btn btn-lg btn-primary" role="button">Връщане към начало</a>
+      <a href="http://198.199.122.215:8080/" class="btn btn-lg btn-info" role="button">Връщане към начало</a>
     </div>
 
   </form>
