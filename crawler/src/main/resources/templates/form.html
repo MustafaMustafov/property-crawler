@@ -16,7 +16,11 @@
 <div class="container mt-4">
   <h2 class="text-center mb-4">Изготвяне на Сравнителна Оценка</h2>
 
-  <form th:action="@{/generate-word-form}" method="POST" th:object="${dto}">
+  <div id="alertBox" class="alert alert-primary text-center" style="display: none;" role="alert">
+    Не са намерени данни за посочените критерии.
+  </div>
+
+  <form id="propertyForm" th:action="@{/generate-word-form}" method="POST" th:object="${dto}">
     <div class="row mb-3">
       <!-- Град -->
       <div class="col-md-6">
@@ -141,6 +145,52 @@
           console.error('There has been a problem with your fetch operation:', error);
       }
   }
+
+  document.getElementById("propertyForm").addEventListener("submit", async function(event) {
+      event.preventDefault(); // Prevent the default form submission
+
+      const form = event.target;
+      const formData = new FormData(form);
+      const url = 'http://198.199.122.215:8080/generate-word-form';
+
+      try {
+          const response = await fetch(url, {
+              method: "POST",
+              body: formData
+          });
+
+          if (response.status === 204) {
+            const alertBox = document.getElementById("alertBox");
+            alertBox.style.display = "block";
+
+            // Hide the alert box after 5 seconds
+            setTimeout(() => {
+                alertBox.style.display = "none";
+            }, 5000);
+              } else if (response.status === 200) {
+            // Handle file download for 200 response
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const filename = contentDisposition
+                ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+                : 'document.docx'; // Default filename
+
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(blobUrl);
+        } else {
+            // Handle other response statuses if necessary
+            document.getElementById("alertBox").style.display = "block";
+        }
+    }  catch (error) {
+          console.error('There has been a problem with your fetch operation:', error);
+      }
+  });
 </script>
 </body>
 </html>

@@ -66,7 +66,7 @@ public class PdfReaderServiceImpl implements PdfReaderService {
                         if (cellTexts.length >= 8) {
                             propertyData.setCity(cellTexts[0].split(" ")[1].trim());
                             propertyData.setLocation(cellTexts[1].trim());
-                            propertyData.setPropertyType(PropertyType.getIdByValue(cellTexts[2].trim()));
+                            propertyData.setPropertyType(PropertyType.getIdByValue(cellTexts[2].trim().replaceAll("\\s+","")));
                             propertyData.setPropertySizeClean(Integer.parseInt(cellTexts[3].trim()));
                             propertyData.setPropertySize(Integer.parseInt(cellTexts[4].trim()));
                             propertyData.setConstructionType(

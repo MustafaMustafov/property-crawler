@@ -9,8 +9,6 @@ import com.property.crawler.property.mapper.PropertyDtoFormVersionToPropertyDto;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -77,15 +75,21 @@ public class WordService {
         throws IOException, InvalidFormatException {
         List<PropertyDto> propertyList = imotBGService.getProperty(1, dto.getPropertyType(), dto.getCity(),
             dto.getLocation(), dto.getPropertySize());
-        propertyList.add(PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto));
-        return generateWordDocument(propertyList);
+        if (!propertyList.isEmpty()) {
+            propertyList.add(PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto));
+            return generateWordDocument(propertyList);
+        }
+        return new byte[0];
     }
 
     public byte[] createWordFileWithFoundPropertiesFromPdf(MultipartFile multipartFile)
         throws IOException, InvalidFormatException {
         // [foundProperties.. , searchProperty]
         List<PropertyDto> propertyList = pdfReaderService.getPropertiesBySearchCriteria(multipartFile);
-        return generateWordDocument(propertyList);
+        if (!propertyList.isEmpty() && propertyList.size() > 1) {
+            return generateWordDocument(propertyList);
+        }
+        return new byte[0];
     }
 
     public byte[] generateWordDocument(List<PropertyDto> propertyDtos) throws IOException, InvalidFormatException {
