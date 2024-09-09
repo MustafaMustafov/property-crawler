@@ -1,6 +1,7 @@
 package com.property.crawler.property;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,8 @@ import lombok.Setter;
 public class PropertyDto {
 
     private String city;
-    private String location;
+    private String mainLocation;
+    private List<String> neighbourLocations;
     private int propertyType;
     private int propertySize;
     private int propertySizeClean;
@@ -23,4 +25,18 @@ public class PropertyDto {
     private String price;
     private LocalDateTime publicationDateAndTime;
     private String propertyUrl;
+
+    @Override
+    public String toString() {
+        return "PropertyDto - " +
+            "  City: '" + city + '\'' +
+            ", Main Location: '" + mainLocation + '\'' +
+            ", Neighbour Locations: '" + neighbourLocations + '\'' +
+            ", Property Type: " + propertyType +
+            ", Property Size: " + propertySize +
+            ", Construction Type: '" + constructionType + '\'' +
+            ", Has Garage: '" + hasGarage + '\'' +
+            ", Floor Info: '" + floorInfo + '\'' +
+            ", Price: '" + price;
+    }
 }

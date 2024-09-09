@@ -1,17 +1,24 @@
 package com.property.crawler.word;
 
+import com.property.crawler.entity.SearchRecord;
 import com.property.crawler.enums.PropertyType;
 import com.property.crawler.imotbg.ImotBGService;
 import com.property.crawler.pdf.reader.PdfReaderService;
 import com.property.crawler.property.PropertyDto;
 import com.property.crawler.property.PropertyDtoFormVersion;
 import com.property.crawler.property.mapper.PropertyDtoFormVersionToPropertyDto;
+import com.property.crawler.repository.SearchRecordRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.util.Units;
@@ -71,24 +78,122 @@ public class WordService {
     @Autowired
     ResourceLoader resourceLoader;
 
+    @Autowired
+    SearchRecordRepository searchRecordRepository;
+
     public byte[] createWordFileWithFoundPropertiesFromForm(PropertyDtoFormVersion dto)
         throws IOException, InvalidFormatException {
-        List<PropertyDto> propertyList = imotBGService.getProperty(1, dto.getPropertyType(), dto.getCity(),
-            dto.getLocation(), dto.getPropertySize());
+        List<PropertyDto> propertyList;
+
+        propertyList = getPropertiesByLocations(dto);
+
+        SearchRecord searchRecord = new SearchRecord();
+        PropertyDto searchProperty = PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto);
         if (!propertyList.isEmpty()) {
-            propertyList.add(PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto));
-            return generateWordDocument(propertyList);
+
+            propertyList.add(searchProperty);
+            byte[] generatedWord = generateWordDocument(propertyList);
+
+            searchRecord.setSearchObject(searchProperty.toString());
+            searchRecord.setFile(null);
+            searchRecord.setTimestamp(LocalDateTime.now());
+            searchRecordRepository.save(searchRecord);
+
+            return generatedWord;
         }
+
+        searchRecord.setSearchObject("Nothing found for - " + searchProperty.toString());
+        searchRecord.setFile(null);
+        searchRecord.setTimestamp(LocalDateTime.now());
+        searchRecordRepository.save(searchRecord);
+
         return new byte[0];
+    }
+
+    private List<PropertyDto> getPropertiesByLocations(PropertyDtoFormVersion dto) {
+        // Executor for parallel requests
+        ExecutorService executorService = Executors.newFixedThreadPool(dto.getNeighbourLocations().size() + 1);
+
+        // List to hold futures for async property retrieval from neighbor locations
+        List<CompletableFuture<List<PropertyDto>>> futures = new ArrayList<>();
+        List<PropertyDto> finalPropertyList = new ArrayList<>();
+
+        try {
+            // First, search for properties in the main location
+            List<PropertyDto> mainLocationProperties = imotBGService.getProperty(1, dto.getPropertyType(),
+                dto.getCity(), dto.getMainLocation(), dto.getPropertySize());
+            finalPropertyList.addAll(mainLocationProperties);
+
+            // If we already have 5 or more properties, return them
+            if (finalPropertyList.size() >= 5) {
+                return getOnlyFiveProperties(finalPropertyList);
+            }
+
+            // If fewer than 5 properties are found, start searching in neighboring locations
+            for (String location : dto.getNeighbourLocations()) {
+                CompletableFuture<List<PropertyDto>> future = CompletableFuture.supplyAsync(
+                    () -> imotBGService.getProperty(1, dto.getPropertyType(), dto.getCity(), location,
+                        dto.getPropertySize()), executorService);
+                futures.add(future);
+            }
+
+            // Wait for neighbor location futures to complete and aggregate results
+            for (CompletableFuture<List<PropertyDto>> future : futures) {
+                List<PropertyDto> result = future.get(); // Block until each future completes
+                finalPropertyList.addAll(result);
+
+                // Stop as soon as we have 5 or more properties
+                if (finalPropertyList.size() >= 5) {
+                    break;
+                }
+            }
+
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace(); // Replace with appropriate logging or error handling
+        } finally {
+            // Ensure the executor is shut down after use
+            executorService.shutdown();
+        }
+
+        // Return only the first 5 properties
+        return getOnlyFiveProperties(finalPropertyList);
+    }
+
+
+    private static List<PropertyDto> getOnlyFiveProperties(List<PropertyDto> propertyList) {
+        if (propertyList.size() > 5) {
+            List<PropertyDto> propertyDtoListOfSize5 = new ArrayList<>();
+            for (int i = 0; i < 5; i++) {
+                propertyDtoListOfSize5.add(propertyList.get(i));
+            }
+            return propertyDtoListOfSize5;
+        } else {
+            return propertyList;
+        }
     }
 
     public byte[] createWordFileWithFoundPropertiesFromPdf(MultipartFile multipartFile)
         throws IOException, InvalidFormatException {
         // [foundProperties.. , searchProperty]
+
         List<PropertyDto> propertyList = pdfReaderService.getPropertiesBySearchCriteria(multipartFile);
+        SearchRecord searchRecord = new SearchRecord();
         if (!propertyList.isEmpty() && propertyList.size() > 1) {
-            return generateWordDocument(propertyList);
+            byte[] generatedWord = generateWordDocument(propertyList);
+
+            searchRecord.setSearchObject(propertyList.get(propertyList.size() - 1).toString());
+            searchRecord.setFile(null);
+            searchRecord.setTimestamp(LocalDateTime.now());
+            searchRecordRepository.save(searchRecord);
+
+            return generatedWord;
         }
+
+        searchRecord.setSearchObject("Nothing found for - " + propertyList.get(propertyList.size() - 1).toString());
+        searchRecord.setTimestamp(LocalDateTime.now());
+        searchRecord.setFile(new byte[0]);
+        searchRecordRepository.save(searchRecord);
+
         return new byte[0];
     }
 
@@ -112,6 +217,7 @@ public class WordService {
         Arrays.stream(rowIndexToFillBackgroundColor).forEach(rowIndex -> {
             mergeCellsHorizontally(table, rowIndex, 0, 9);
             setBackgroundColorForACell(table, rowIndex, 0, "D3D3D3");
+            setTextToMergedCellsRow(rowIndex, table);
         });
 
         mergeCellsHorizontally(table, 1, 8, 9);
@@ -128,9 +234,25 @@ public class WordService {
         document.write(outputStream);
         document.close();
 
-        byte[] documentBytes = outputStream.toByteArray();
+        return outputStream.toByteArray();
+    }
 
-        return documentBytes;
+    private static void setTextToMergedCellsRow(int rowIndex, XWPFTable table) {
+        XWPFTableRow tableRow = table.getRow(rowIndex);
+        XWPFTableCell cell = tableRow.getCell(0);
+
+        XWPFParagraph paragraph = cell.getParagraphs().get(0);
+        paragraph.setAlignment(org.apache.poi.xwpf.usermodel.ParagraphAlignment.CENTER);
+
+        XWPFRun run = paragraph.createRun();
+        run.setBold(true);
+        if (rowIndex == 0) {
+            run.setText("Вашият имот");
+        } else if (rowIndex == 3) {
+            run.setText("Продадени имоти");
+        } else {
+            run.setText("Имоти в продажба");
+        }
     }
 
     private static void setFoundPropertiesIntoTableRows(List<PropertyDto> foundProperties, XWPFTable table) {
@@ -140,7 +262,7 @@ public class WordService {
         foundProperties.forEach(propertyDto -> {
             XWPFTableRow dataRow = table.getRow(i.get());
             addHyperlinkToCityCell(propertyDto, dataRow);
-            dataRow.getCell(1).setText(propertyDto.getLocation());
+            dataRow.getCell(1).setText(propertyDto.getMainLocation());
             dataRow.getCell(2).setText(PropertyType.getValueById(propertyDto.getPropertyType()));
             dataRow.getCell(3).setText(String.valueOf(propertyDto.getPropertySizeClean()));
             dataRow.getCell(4).setText(String.valueOf(propertyDto.getPropertySize()));
@@ -166,7 +288,7 @@ public class WordService {
     private static void setSecondRowForSearchProperty(XWPFTable table, PropertyDto searchProperty) {
         XWPFTableRow dataRow2 = table.getRow(2);
         dataRow2.getCell(0).setText(searchProperty.getCity());
-        dataRow2.getCell(1).setText(searchProperty.getLocation());
+        dataRow2.getCell(1).setText(searchProperty.getMainLocation());
         dataRow2.getCell(2).setText(PropertyType.getValueById(searchProperty.getPropertyType()));
         dataRow2.getCell(3).setText(String.valueOf(searchProperty.getPropertySizeClean()));
         dataRow2.getCell(4).setText(String.valueOf(searchProperty.getPropertySize()));

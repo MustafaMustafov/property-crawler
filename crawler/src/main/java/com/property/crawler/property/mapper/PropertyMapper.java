@@ -15,7 +15,7 @@ public class PropertyMapper {
         PropertyDto propertyDto = new PropertyDto();
 
         propertyDto.setPropertyType(property.getPropertyType().getId());
-        propertyDto.setLocation(property.getLocation());
+        propertyDto.setMainLocation(property.getLocation());
         propertyDto.setCity(property.getCity());
         propertyDto.setPrice(property.getPrice());
         propertyDto.setPropertySize((int) property.getTotalSize());

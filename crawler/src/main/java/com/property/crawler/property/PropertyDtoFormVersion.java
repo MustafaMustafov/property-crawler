@@ -1,11 +1,10 @@
 package com.property.crawler.property;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,7 +13,8 @@ import java.time.LocalDateTime;
 public class PropertyDtoFormVersion {
 
     private String city;
-    private String location;
+    private String mainLocation;
+    private List<String> neighbourLocations;
     private int actionType;
     private int propertyType;
     private int propertySize;

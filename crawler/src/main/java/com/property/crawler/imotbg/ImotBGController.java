@@ -105,31 +105,30 @@ public class ImotBGController {
         return ResponseEntity.ok(Neighborhood.getNeighborhoodsByTown(townName));
     }
 
-
-    @PostMapping("/generate-pdf")
-    @ResponseBody
-    public ResponseEntity<byte[]> generatePdf(@ModelAttribute PropertyDtoFormVersion dto) {
-        try {
-            byte[] pdf = pdfService.createPdfFromForm(dto);
-
-            if (pdf == null || pdf.length == 0) {
-                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
-            }
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData(ATTACHMENT, "Filled-property-template.pdf");
-
-            return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
-        } catch (TemplateProcessingException e) {
-            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        } catch (Exception e) {
-            logger.error(UNEXPECTED_ERROR, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+//    @PostMapping("/generate-pdf")
+//    @ResponseBody
+//    public ResponseEntity<byte[]> generatePdf(@ModelAttribute PropertyDtoFormVersion dto) {
+//        try {
+//            byte[] pdf = pdfService.createPdfFromForm(dto);
+//
+//            if (pdf == null || pdf.length == 0) {
+//                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
+//                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+//            }
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_PDF);
+//            headers.setContentDispositionFormData(ATTACHMENT, "Filled-property-template.pdf");
+//
+//            return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+//        } catch (TemplateProcessingException e) {
+//            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        } catch (Exception e) {
+//            logger.error(UNEXPECTED_ERROR, e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        }
+//    }
 
     @PostMapping("/generate-word-form")
     @ResponseBody

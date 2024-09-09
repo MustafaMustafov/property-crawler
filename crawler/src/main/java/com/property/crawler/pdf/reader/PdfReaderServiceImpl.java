@@ -30,7 +30,7 @@ public class PdfReaderServiceImpl implements PdfReaderService {
             PropertyDto propertyData = extractPropertyInformationToSearch(document);
             if (propertyData != null) {
                 List<PropertyDto> propertyList = imotBGService.getProperty(1, propertyData.getPropertyType(),
-                    propertyData.getCity(), propertyData.getLocation(),
+                    propertyData.getCity(), propertyData.getMainLocation(),
                     propertyData.getPropertySize());
 
                 propertyList.add(propertyData);
@@ -64,9 +64,15 @@ public class PdfReaderServiceImpl implements PdfReaderService {
                         String[] cellTexts = rowText.split("\\|");
 
                         if (cellTexts.length >= 8) {
-                            propertyData.setCity(cellTexts[0].split(" ")[1].trim());
-                            propertyData.setLocation(cellTexts[1].trim());
-                            propertyData.setPropertyType(PropertyType.getIdByValue(cellTexts[2].trim().replaceAll("\\s+","")));
+                            if (cellTexts[0].contains(" ") && (cellTexts[0].contains("Град") || cellTexts[0].contains(
+                                "град"))) {
+                                propertyData.setCity(cellTexts[0].split(" ")[1].trim());
+                            } else {
+                                propertyData.setCity(cellTexts[0].trim().replaceAll("\\s+", ""));
+                            }
+                            propertyData.setMainLocation(cellTexts[1].trim());
+                            propertyData.setPropertyType(
+                                PropertyType.getIdByValue(cellTexts[2].trim().replaceAll("\\s+", "")));
                             propertyData.setPropertySizeClean(Integer.parseInt(cellTexts[3].trim()));
                             propertyData.setPropertySize(Integer.parseInt(cellTexts[4].trim()));
                             propertyData.setConstructionType(

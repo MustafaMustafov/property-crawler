@@ -22,6 +22,14 @@
     .container {
       max-width: 600px;
     }
+    .spinner-container {
+      display: none; /* Initially hidden */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -38,25 +46,39 @@
     </div>
     <div class="d-flex justify-content-center">
       <button type="submit" class="btn btn-lg btn-primary me-3">Генерирай оценки</button>
-      <a href="http://198.199.122.215:8080/" class="btn btn-lg btn-info me-3" role="button">Връщане към начало</a>
-      <a href="http://198.199.122.215:8080/download-template" class="btn btn-lg btn-warning" role="button">Свали Word
-        шаблон</a>
+      <a href="http://localhost:8080/" class="btn btn-lg btn-info me-3" role="button">Връщане към начало</a>
+      <a href="http://localhost:8080/download-template" class="btn btn-lg btn-warning" role="button">Свали Word шаблон</a>
     </div>
   </form>
+
+  <!-- Spinner HTML -->
+  <div id="spinner" class="spinner-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
 </div>
+
 <script>
   document.getElementById("attachPdfForm").addEventListener("submit", async function(event) {
       event.preventDefault(); // Prevent the default form submission
 
       const form = event.target;
       const formData = new FormData(form);
-      const url = 'http://198.199.122.215:8080/generate-word';
+      const url = 'http://localhost:8080/generate-word';
+      const spinner = document.getElementById("spinner");
+
+      // Show spinner
+      spinner.style.display = "block";
 
       try {
           const response = await fetch(url, {
               method: "POST",
               body: formData
           });
+
+          // Hide spinner
+          spinner.style.display = "none";
 
           if (response.status === 204) {
             const alertBox = document.getElementById("alertBox");
@@ -66,7 +88,7 @@
             setTimeout(() => {
                 alertBox.style.display = "none";
             }, 5000);
-              } else if (response.status === 200) {
+          } else if (response.status === 200) {
             // Handle file download for 200 response
             const contentDisposition = response.headers.get('Content-Disposition');
             const filename = contentDisposition
@@ -82,12 +104,14 @@
             a.click();
             a.remove();
             window.URL.revokeObjectURL(blobUrl);
-        } else {
+          } else {
             // Handle other response statuses if necessary
             document.getElementById("alertBox").style.display = "block";
-        }
-    }  catch (error) {
+          }
+      } catch (error) {
           console.error('There has been a problem with your fetch operation:', error);
+          // Hide spinner on error
+          spinner.style.display = "none";
       }
   });
 </script>
