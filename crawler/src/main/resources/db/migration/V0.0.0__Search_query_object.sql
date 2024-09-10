@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "search_query_object" (
     id SERIAL PRIMARY KEY,
     search_object TEXT NOT NULL,
-    generated_file BYTEA(MAX),
+    generated_file BYTEA,
     timestamp TIMESTAMP NOT NULL
 );
 

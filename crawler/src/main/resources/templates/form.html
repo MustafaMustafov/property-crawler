@@ -58,7 +58,7 @@
     <div class="row mb-3">
       <div class="col-md-12">
         <label for="otherNeighborhood" class="form-label">Съседни квартали:</label>
-        <select id="otherNeighborhood" name="neighbourLocations[]" class="form-select" multiple="multiple"
+        <select id="otherNeighborhood" name="neighbourLocations[]" class="form-select" multiple
                 th:field="*{neighbourLocations}" required>
           <option value="">Изберете съседни квартали</option>
           <!-- Options will be populated dynamically -->
@@ -236,6 +236,25 @@
           spinner.style.display = "none";
       }
   });
+</script>
+<script>
+ document.addEventListener("DOMContentLoaded", function(){
+   multiSelectWithoutCtrl('#otherNeighborhood');
+ });
+
+ function multiSelectWithoutCtrl(elemSelector){
+   let selectElement = document.querySelector(elemSelector);
+
+   selectElement.addEventListener("mousedown", function (e){
+     e.preventDefault();
+     let option = e.target;
+     if(option.tagName === 'OPTION'){
+       option.selected = !option.selected;
+       selectElement.focus();
+     }
+   });
+ }
+
 </script>
 </body>
 </html>
