@@ -46,8 +46,8 @@
     </div>
     <div class="d-flex justify-content-center">
       <button type="submit" class="btn btn-lg btn-primary me-3">Генерирай оценки</button>
-      <a href="http://localhost:8080/" class="btn btn-lg btn-info me-3" role="button">Връщане към начало</a>
-      <a href="http://localhost:8080/download-template" class="btn btn-lg btn-warning" role="button">Свали Word шаблон</a>
+      <a href="http://198.199.122.215:8080/" class="btn btn-lg btn-info me-3" role="button">Връщане към начало</a>
+      <a href="http://198.199.122.215:8080/download-template" class="btn btn-lg btn-warning" role="button">Свали Word шаблон</a>
     </div>
   </form>
 
@@ -65,7 +65,7 @@
 
       const form = event.target;
       const formData = new FormData(form);
-      const url = 'http://localhost:8080/generate-word';
+      const url = 'http://198.199.122.215:8080/generate-word';
       const spinner = document.getElementById("spinner");
 
       // Show spinner
