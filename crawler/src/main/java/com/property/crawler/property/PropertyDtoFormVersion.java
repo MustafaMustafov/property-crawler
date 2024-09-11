@@ -18,9 +18,9 @@ public class PropertyDtoFormVersion {
     private int actionType;
     private int propertyType;
     private int propertySize;
+    private String propertyConstructionType;
+    private int propertySizeClean;
     private int numberOfRooms;
-    private int numberOfBedrooms;
-    private int numberOfBathrooms;
     private boolean hasGarage;
     private String orientation;
     private int price;

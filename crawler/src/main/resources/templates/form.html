@@ -59,7 +59,7 @@
       <div class="col-md-12">
         <label for="otherNeighborhood" class="form-label">Съседни квартали:</label>
         <select id="otherNeighborhood" name="neighbourLocations[]" class="form-select" multiple
-                th:field="*{neighbourLocations}" required>
+                th:field="*{neighbourLocations}">
           <option value="">Изберете съседни квартали</option>
           <!-- Options will be populated dynamically -->
         </select>
@@ -95,20 +95,21 @@
     <!-- Тип строителство -->
     <div class="mb-3">
       <label for="buildingType" class="form-label">Тип строителство:</label>
-      <select id="buildingType" name="buildingType" class="form-select">
-        <option value="unknown" disabled></option>
-        <option value="panel">Панел</option>
-        <option value="brick">Тухла</option>
+      <select id="buildingType" name="buildingType" class="form-select" th:field="*{propertyConstructionType}">
+        <option value="Няма информация" disabled></option>
+        <option value="Панел">Панел</option>
+        <option value="Тухла">Тухла</option>
       </select>
     </div>
 
     <div class="row mb-3">
       <!-- Чиста площ -->
       <div class="col-md-6">
-        <label for="usableArea" class="form-label">Чиста площ (кв.м):</label>
-        <input type="number" id="usableArea" name="usableArea" class="form-control" value="0" required
+        <label for="propertySizeClean" class="form-label">Чиста площ (кв.м):</label>
+        <input type="number" id="propertySizeClean" name="propertySizeClean" class="form-control" value="0" required
                oninvalid="this.setCustomValidity('Моля, въведете стойност по-голяма от нула.')"
-               oninput="this.setCustomValidity('')">
+               oninput="this.setCustomValidity('')"
+               th:field="*{propertySizeClean}">
       </div>
 
       <!-- Обща площ -->
