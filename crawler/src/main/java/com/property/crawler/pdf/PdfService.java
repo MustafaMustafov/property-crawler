@@ -37,20 +37,20 @@ public class PdfService {
         return newUpdatedPdf;
     }
 
-    public byte[] createPdfFromForm(PropertyDtoFormVersion dto) {
-
-        List<PropertyDto> propertyList = imotBGService.getProperty(dto.getActionType(), dto.getPropertyType(),
-            dto.getCity(),
-            dto.getLocation(), dto.getPropertySize());
-
-        PropertyDto searchDto = PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto);
-
-        byte[] newUpdatedPdf;
-        try {
-            newUpdatedPdf = pdfWriterService.generatePdf(propertyList, searchDto);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return newUpdatedPdf;
-    }
+//    public byte[] createPdfFromForm(PropertyDtoFormVersion dto) {
+//
+//        List<PropertyDto> propertyList = imotBGService.getProperty(dto.getActionType(), dto.getPropertyType(),
+//            dto.getCity(),
+//            dto.getLocation(), dto.getPropertySize());
+//
+//        PropertyDto searchDto = PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto);
+//
+//        byte[] newUpdatedPdf;
+//        try {
+//            newUpdatedPdf = pdfWriterService.generatePdf(propertyList, searchDto);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        return newUpdatedPdf;
+//    }
 }

@@ -1,0 +1,23 @@
+version: "4.0"
+
+services:
+  db:
+    image: postgres:14.13-alpine3.20
+    container_name: postgres_db
+    restart: on-failure
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - csp-network
+
+volumes:
+  db_data:
+
+networks:
+  csp-network:

@@ -7,7 +7,6 @@ import com.property.crawler.property.Property;
 import com.property.crawler.property.PropertyDto;
 import com.property.crawler.property.PropertySearchDto;
 import com.property.crawler.property.mapper.PropertyMapper;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,7 +23,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -44,11 +42,11 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
-
 @Service
 @Slf4j
 public class ImotBGService {
+
+    public static final String WINDOWS_1251 = "windows-1251";
     @Value("${proxy.username}")
     private String PROXY_USERNAME;
 
@@ -59,12 +57,12 @@ public class ImotBGService {
     private static final String IMOT_BG_URL = "https://www.imot.bg/pcgi/imot.cgi";
 
     public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
-                                         int propertySize) {
+        int propertySize) {
         List<PropertyDto> propertyList = new ArrayList<>();
 
         try {
             String searchUrl = buildSearchPropertyUrl(IMOT_BG_URL,
-                    new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
+                new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
 
             HttpGet httpGet = new HttpGet(searchUrl);
 
@@ -112,14 +110,14 @@ public class ImotBGService {
 
         try {
             httpGet.setHeader("User-Agent",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
             // execute request
             CloseableHttpResponse response = httpClient.execute(httpGet);
             HttpEntity entity = response.getEntity();
 
             if (entity != null) {
-                String htmlContent = EntityUtils.toString(entity, "windows-1251");
-                Document doc = Jsoup.parse(htmlContent, "windows-1251");
+                String htmlContent = EntityUtils.toString(entity, WINDOWS_1251);
+                Document doc = Jsoup.parse(htmlContent, WINDOWS_1251);
                 Year year = extractConstructionYear(doc);
                 return year == null || year.isBefore(Year.now());
             }
@@ -146,19 +144,19 @@ public class ImotBGService {
         HttpHost proxy = new HttpHost(PROXY_TUNNEL, 50100, "http");
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
-                new AuthScope(proxy.getHostName(), proxy.getPort()),
-                new UsernamePasswordCredentials(PROXY_USERNAME, PROXY_PASSWORD)
+            new AuthScope(proxy.getHostName(), proxy.getPort()),
+            new UsernamePasswordCredentials(PROXY_USERNAME, PROXY_PASSWORD)
         );
 
         return HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .setProxy(proxy)
-                .build();
+            .setDefaultCredentialsProvider(credsProvider)
+            .setProxy(proxy)
+            .build();
 
     }
 
     private String buildSearchPropertyUrl(String url, PropertySearchDto propertySearchDto)
-            throws UnsupportedEncodingException {
+        throws UnsupportedEncodingException {
         return url + "?" + propertySearchDto.toQueryString();
     }
 
@@ -168,12 +166,12 @@ public class ImotBGService {
         HttpHost proxy = new HttpHost(PROXY_TUNNEL, PORT, "http");
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(PROXY_TUNNEL, PORT),
-                new UsernamePasswordCredentials(PROXY_USERNAME, PROXY_PASSWORD));
+            new UsernamePasswordCredentials(PROXY_USERNAME, PROXY_PASSWORD));
 
         try (CloseableHttpClient httpClient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .setProxy(proxy)
-                .build()) {
+            .setDefaultCredentialsProvider(credsProvider)
+            .setProxy(proxy)
+            .build()) {
 
             for (String url : urls) {
                 try {
@@ -182,14 +180,14 @@ public class ImotBGService {
 
                     HttpGet httpGet = new HttpGet(urlToVisit);
                     httpGet.setHeader("User-Agent",
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
 
                     try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                         HttpEntity entity = response.getEntity();
                         if (entity != null) {
                             // Handle response encoding
-                            String content = EntityUtils.toString(entity, "windows-1251");
-                            Document doc = Jsoup.parse(content, "windows-1251");
+                            String content = EntityUtils.toString(entity, WINDOWS_1251);
+                            Document doc = Jsoup.parse(content, WINDOWS_1251);
 
                             property.setPropertyType(PropertyType.getById(propertyTypeId));
                             extractTitle(doc, property);
@@ -227,10 +225,10 @@ public class ImotBGService {
             String infoText = infoElement.text();
             if (!isUpdated) {
                 dateTimePattern = Pattern.compile(
-                        "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+                    "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
             } else {
                 dateTimePattern = Pattern.compile(
-                        "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+                    "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
             }
             Matcher matcher = dateTimePattern.matcher(infoText);
 
