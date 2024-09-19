@@ -7,6 +7,19 @@ import com.property.crawler.property.Property;
 import com.property.crawler.property.PropertyDto;
 import com.property.crawler.property.PropertySearchDto;
 import com.property.crawler.property.mapper.PropertyMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,46 +36,21 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class ImotBGService {
 
     public static final String WINDOWS_1251 = "windows-1251";
-    @Value("${proxy.username}")
-    private String PROXY_USERNAME;
-
-    @Value("${proxy.password}")
-    private String PROXY_PASSWORD;
-    private static final String PROXY_TUNNEL = "91.92.41.221";
-    private static final int PORT = 50100;
     private static final String IMOT_BG_URL = "https://www.imot.bg/pcgi/imot.cgi";
 
     public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
-        int propertySize) {
+                                         int propertySize) {
         List<PropertyDto> propertyList = new ArrayList<>();
 
         try {
             String searchUrl = buildSearchPropertyUrl(IMOT_BG_URL,
-                new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
+                    new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
 
             HttpGet httpGet = new HttpGet(searchUrl);
 
@@ -110,7 +98,7 @@ public class ImotBGService {
 
         try {
             httpGet.setHeader("User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
             // execute request
             CloseableHttpResponse response = httpClient.execute(httpGet);
             HttpEntity entity = response.getEntity();
@@ -141,73 +129,51 @@ public class ImotBGService {
     }
 
     private CloseableHttpClient getHttpClient() {
-        HttpHost proxy = new HttpHost(PROXY_TUNNEL, 50100, "http");
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-            new AuthScope(proxy.getHostName(), proxy.getPort()),
-            new UsernamePasswordCredentials(PROXY_USERNAME, PROXY_PASSWORD)
-        );
-
-        return HttpClients.custom()
-            .setDefaultCredentialsProvider(credsProvider)
-            .setProxy(proxy)
-            .build();
-
+        return HttpClients.custom().build();
     }
 
     private String buildSearchPropertyUrl(String url, PropertySearchDto propertySearchDto)
-        throws UnsupportedEncodingException {
+            throws UnsupportedEncodingException {
         return url + "?" + propertySearchDto.toQueryString();
     }
 
     public List<PropertyDto> getPropertyInformations(Set<String> urls, int propertyTypeId) {
         List<Property> propertyList = new ArrayList<>();
 
-        HttpHost proxy = new HttpHost(PROXY_TUNNEL, PORT, "http");
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(new AuthScope(PROXY_TUNNEL, PORT),
-            new UsernamePasswordCredentials(PROXY_USERNAME, PROXY_PASSWORD));
+        CloseableHttpClient httpClient = getHttpClient();
 
-        try (CloseableHttpClient httpClient = HttpClients.custom()
-            .setDefaultCredentialsProvider(credsProvider)
-            .setProxy(proxy)
-            .build()) {
+        for (String url : urls) {
+            try {
+                Property property = new Property();
+                String urlToVisit = "https:" + url;
 
-            for (String url : urls) {
-                try {
-                    Property property = new Property();
-                    String urlToVisit = "https:" + url;
-
-                    HttpGet httpGet = new HttpGet(urlToVisit);
-                    httpGet.setHeader("User-Agent",
+                HttpGet httpGet = new HttpGet(urlToVisit);
+                httpGet.setHeader("User-Agent",
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
 
-                    try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
-                        HttpEntity entity = response.getEntity();
-                        if (entity != null) {
-                            // Handle response encoding
-                            String content = EntityUtils.toString(entity, WINDOWS_1251);
-                            Document doc = Jsoup.parse(content, WINDOWS_1251);
+                try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                    HttpEntity entity = response.getEntity();
+                    if (entity != null) {
+                        // Handle response encoding
+                        String content = EntityUtils.toString(entity, WINDOWS_1251);
+                        Document doc = Jsoup.parse(content, WINDOWS_1251);
 
-                            property.setPropertyType(PropertyType.getById(propertyTypeId));
-                            extractTitle(doc, property);
-                            extractPublicationDateTime(doc, property);
-                            extractLocation(doc, property);
-                            extractPrice(doc, property);
-                            extractPricePerSqM(doc, property);
-                            extractDetails(doc, property);
-                            extractDescription(doc, property);
-                            property.setPropertyUrl(urlToVisit);
+                        property.setPropertyType(PropertyType.getById(propertyTypeId));
+                        extractTitle(doc, property);
+                        extractPublicationDateTime(doc, property);
+                        extractLocation(doc, property);
+                        extractPrice(doc, property);
+                        extractPricePerSqM(doc, property);
+                        extractDetails(doc, property);
+                        extractDescription(doc, property);
+                        property.setPropertyUrl(urlToVisit);
 
-                            propertyList.add(property);
-                        }
+                        propertyList.add(property);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         return PropertyMapper.toDtos(propertyList);
@@ -225,10 +191,10 @@ public class ImotBGService {
             String infoText = infoElement.text();
             if (!isUpdated) {
                 dateTimePattern = Pattern.compile(
-                    "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+                        "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
             } else {
                 dateTimePattern = Pattern.compile(
-                    "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+                        "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
             }
             Matcher matcher = dateTimePattern.matcher(infoText);
 
