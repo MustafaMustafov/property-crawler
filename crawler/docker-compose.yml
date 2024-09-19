@@ -31,8 +31,6 @@ services:
       db:
         condition: service_healthy
     environment:
-      PROXY_USERNAME: ${PROXY_USERNAME}
-      PROXY_PASSWORD: ${PROXY_PASSWORD}
       POSTGRES_HOST: db
       DB_TABLE_NAME: ${DB_TABLE_NAME}
       DB_USERNAME: ${DB_USERNAME}
