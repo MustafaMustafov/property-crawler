@@ -1,0 +1,16 @@
+# Locally - use "docker compose -f .\docker-compose-local.yml up -d" to build it
+services:
+  db:
+    image: postgres:16.4-alpine3.20
+    container_name: postgres_db
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 256mb
+    environment:
+      POSTGRES_DB: db_properties
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./dev_db_data:/var/lib/postgresql/data
