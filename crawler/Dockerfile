@@ -1,20 +1,24 @@
-FROM openjdk:17-oracle
-WORKDIR /app
-COPY target/crawler-0.0.1-SNAPSHOT.jar /app
+## Stage 1: Build the application
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+
+WORKDIR /App
+
+COPY pom.xml ./
+
+# Download dependencies offline to reduce build time
+RUN mvn dependency:go-offline
+
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+# Stage 2: Run the application
+FROM amazoncorretto:21
+
+WORKDIR /App
+
+COPY --from=build /App/target/*.jar app.jar
+
 EXPOSE 8080
-CMD ["java", "-jar", "crawler-0.0.1-SNAPSHOT.jar"]
 
-# First stage: build the application
-#FROM maven:3.8.6 AS builder
-#WORKDIR /app
-#COPY pom.xml .gi
-#RUN mvn dependency:go-offline
-#COPY src ./src
-#RUN mvn clean install
-#FROM openjdk:21-slim
-#WORKDIR /app
-#COPY --from=builder /app/target/*.jar ./crawler-0.0.1-SNAPSHOT.jar
-#EXPOSE 90
-#CMD ["java", "-jar", "crawler-0.0.1-SNAPSHOT.jar"]
-
-
+ENTRYPOINT ["java", "-jar", "app.jar"]
