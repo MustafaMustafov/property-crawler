@@ -136,7 +136,7 @@
 
     <div class="d-flex justify-content-center">
       <button class="btn btn-lg btn-primary me-3" type="submit">Търси</button>
-      <a href="http://198.199.122.215:8080/" class="btn btn-lg btn-info" role="button">Връщане към начало</a>
+      <a th:href="@{/}" class="btn btn-lg btn-info" role="button">Връщане към начало</a>
     </div>
   </form>
 
@@ -153,7 +153,8 @@
       const townSelect = document.getElementById("town");
       const selectedTown = townSelect.options[townSelect.selectedIndex].text;
 
-      const url = `http://198.199.122.215:8080/${selectedTown}`;
+      // Dynamically set the URL - http://localhost:8080/Варна or http://123.123.123.123:8080/Варна
+      const url = `${window.location.origin}/${selectedTown}`;
 
       try {
           const response = await fetch(url);
@@ -188,7 +189,7 @@
 
       const form = event.target;
       const formData = new FormData(form);
-      const url = 'http://198.199.122.215:8080/generate-word-form';
+      const url = `${window.location.origin}/generate-word-form`;
       const spinner = document.getElementById("spinner");
 
       // Show spinner
