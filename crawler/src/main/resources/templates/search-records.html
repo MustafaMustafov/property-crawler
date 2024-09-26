@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" xml:lang="bg" lang="bg">
+<head>
+    <title>Search Records</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h2>Search Records</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Search Object</th>
+<!--        <th>Generated File</th>-->
+<!--        <th>Timestamp</th>-->
+        <th style="width: 80px;">Date</th>
+        <th style="width: 80px;">Time</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="record : ${records}">
+        <td th:text="${record.id}"></td>
+        <td th:text="${record.searchObject}"></td>
+<!--        <td th:text="${record.file != null ? 'Available' : 'Not Available'}"></td>-->
+<!--        <td th:text="${record.formattedTimestamp}"></td>-->
+        <td th:text="${record.formattedDate}"></td>
+        <td th:text="${record.formattedTime}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
