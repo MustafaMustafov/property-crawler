@@ -2,6 +2,8 @@ package com.property.crawler.property;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.property.crawler.enums.PropertyType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,7 +34,7 @@ public class PropertyDto {
             "  City: '" + city + '\'' +
             ", Main Location: '" + mainLocation + '\'' +
             ", Neighbour Locations: '" + neighbourLocations + '\'' +
-            ", Property Type: " + propertyType +
+            ", Property Type: " + PropertyType.getValueById(propertyType) +
             ", Property Size: " + propertySize +
             ", Construction Type: '" + constructionType + '\'' +
             ", Has Garage: '" + hasGarage + '\'' +
