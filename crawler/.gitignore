@@ -33,3 +33,7 @@ build/
 .vscode/
 
 .env
+
+# DB directories
+dev_db_data
+db_data
