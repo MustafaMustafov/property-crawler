@@ -1,5 +1,6 @@
 package com.property.crawler.property.mapper;
 
+import com.property.crawler.enums.ConstructionType;
 import com.property.crawler.property.Property;
 import com.property.crawler.property.PropertyDto;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class PropertyMapper {
         propertyDto.setHasGarage(Boolean.TRUE.equals(property.getGarageOrParking()) ? "да" : "не");
         propertyDto.setPublicationDateAndTime(property.getPublicationDateAndTime());
         propertyDto.setPropertyUrl(property.getPropertyUrl());
+        propertyDto.setConstructionType(property.getConstructionType().getValue());
 
         return propertyDto;
     }

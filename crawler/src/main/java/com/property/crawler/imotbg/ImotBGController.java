@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,17 +34,20 @@ public class ImotBGController {
     public static final String UNEXPECTED_ERROR = "Unexpected error: {}";
     public static final String I_O_ERROR = "I/O error: {}";
 
-    @Autowired
-    WordService wordService;
-    @Autowired
-    PdfService pdfService;
+    private final WordService wordService;
+    private final PdfService pdfService;
 
-    @GetMapping
+    public ImotBGController(WordService wordService, PdfService pdfService) {
+        this.wordService = wordService;
+        this.pdfService = pdfService;
+    }
+
+    @GetMapping // отваря началната страница
     public String getIndexPage() {
         return "index";
     }
 
-    @GetMapping("/download-template")
+    @GetMapping("/download-template") // позволява да се изтегли word шаблона
     @ResponseBody
     public ResponseEntity<byte[]> getWordTemplate() throws IOException {
         byte[] wordDoc = wordService.getPropertySearchTemplate();
@@ -85,56 +87,33 @@ public class ImotBGController {
     }
 
     // - - - FORM - - -
-    @GetMapping("/form")
+    @GetMapping("/form") // генерирай с форма бутона праща тук - зарежда се страницата с формата
     public String getSearchingForm(Model model) {
         model.addAttribute("dto", new PropertyDtoFormVersion());
+        model.addAttribute("pageCount", 15);
         model.addAttribute("neighborhoods", Neighborhood.values());
 
         return "form";
     }
 
-    @GetMapping("/pdf")
+    @GetMapping("/pdf") // зарежда страницата с инпут-а за прикачване на пдф
     public String getAttachPdfVariant() {
         return "attach-pdf";
     }
 
 
-    @GetMapping("/{townName}")
+    @GetMapping("/{townName}") // връща квартали по град
     @ResponseBody
     public ResponseEntity<List<String>> getNeighborhoodsByTownName(@PathVariable String townName) {
         return ResponseEntity.ok(Neighborhood.getNeighborhoodsByTown(townName));
     }
 
-//    @PostMapping("/generate-pdf")
-//    @ResponseBody
-//    public ResponseEntity<byte[]> generatePdf(@ModelAttribute PropertyDtoFormVersion dto) {
-//        try {
-//            byte[] pdf = pdfService.createPdfFromForm(dto);
-//
-//            if (pdf == null || pdf.length == 0) {
-//                logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
-//                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
-//            }
-//
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_PDF);
-//            headers.setContentDispositionFormData(ATTACHMENT, "Filled-property-template.pdf");
-//
-//            return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
-//        } catch (TemplateProcessingException e) {
-//            logger.error(TEMPLATE_PROCESSING_ERROR, e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        } catch (Exception e) {
-//            logger.error(UNEXPECTED_ERROR, e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        }
-//    }
 
-    @PostMapping("/generate-word-form")
+    @PostMapping("/generate-word-form") // генериране на файл-а от формата
     @ResponseBody
-    public ResponseEntity<byte[]> generateWordFromForm(@ModelAttribute PropertyDtoFormVersion dto) {
+    public ResponseEntity<byte[]> generateWordFromForm(@ModelAttribute PropertyDtoFormVersion dto,  @RequestParam(value = "pageCount", defaultValue = "15") Integer pageCount) {
         try {
-            byte[] wordDoc = wordService.createWordFileWithFoundPropertiesFromForm(dto);
+            byte[] wordDoc = wordService.createWordFileWithFoundPropertiesFromForm(dto, pageCount);
 
             if (wordDoc == null || wordDoc.length == 0) {
                 logger.warn(NO_PROPERTIES_FOUND_OR_FAILED_TO_GENERATE_PDF);
@@ -155,9 +134,8 @@ public class ImotBGController {
         }
     }
 
-    // - - - END FORM - - -
 
-    @PostMapping("/generate-word")
+    @PostMapping("/generate-word") // генериране на файл-а от качения файл
     @ResponseBody
     public ResponseEntity<byte[]> handleFileUploadReturnWord(@RequestParam("file") MultipartFile file) {
         try {
@@ -184,6 +162,4 @@ public class ImotBGController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
-
 }
