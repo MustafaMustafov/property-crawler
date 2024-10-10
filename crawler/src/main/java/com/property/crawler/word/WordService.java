@@ -8,9 +8,20 @@ import com.property.crawler.property.PropertyDto;
 import com.property.crawler.property.PropertyDtoFormVersion;
 import com.property.crawler.property.mapper.PropertyDtoFormVersionToPropertyDto;
 import com.property.crawler.repository.SearchRecordRepository;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.util.Units;
+import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,72 +31,55 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.util.Units;
-import org.apache.poi.xwpf.usermodel.Document;
-import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFHyperlinkRun;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRelation;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHyperlink;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTShd;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STMerge;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class WordService {
 
     private static final String[] HEADERS_SEARCH_PROPERTY = {
-        "Град",
-        "Квартал",
-        "Тип имот",
-        "Чиста площ",
-        "Обща площ",
-        "Тухла/Панел",
-        "Гараж/Паркомясто",
-        "Етаж/Етажност",
-        "Предложена цена"
+            "Град",
+            "Квартал",
+            "Тип имот",
+            "Чиста площ",
+            "Обща площ",
+            "Тухла/Панел",
+            "Гараж/Паркомясто",
+            "Етаж/Етажност",
+            "Предложена цена"
     };
 
     private static final String[] HEADERS_FOUND_PROPERTIES = {
-        "Град",
-        "Квартал",
-        "Тип имот",
-        "Чиста площ",
-        "Обща площ",
-        "Тухла/Панел",
-        "Гараж/Паркомясто",
-        "Етаж/Етажност",
-        "Срок за продажба",
-        "Продажна цена"
+            "Град",
+            "Квартал",
+            "Тип имот",
+            "Чиста площ",
+            "Обща площ",
+            "Тухла/Панел",
+            "Гараж/Паркомясто",
+            "Етаж/Етажност",
+            "Срок за продажба",
+            "Продажна цена"
     };
-    @Autowired
-    PdfReaderService pdfReaderService;
 
-    @Autowired
-    ImotBGService imotBGService;
+    private final PdfReaderService pdfReaderService;
 
-    @Autowired
-    ResourceLoader resourceLoader;
+    private final ImotBGService imotBGService;
 
-    @Autowired
-    SearchRecordRepository searchRecordRepository;
+    private final ResourceLoader resourceLoader;
 
-    public byte[] createWordFileWithFoundPropertiesFromForm(PropertyDtoFormVersion dto)
-        throws IOException, InvalidFormatException {
+    private final SearchRecordRepository searchRecordRepository;
+
+    public WordService(PdfReaderService pdfReaderService, ImotBGService imotBGService, ResourceLoader resourceLoader, SearchRecordRepository searchRecordRepository) {
+        this.pdfReaderService = pdfReaderService;
+        this.imotBGService = imotBGService;
+        this.resourceLoader = resourceLoader;
+        this.searchRecordRepository = searchRecordRepository;
+    }
+
+    public byte[] createWordFileWithFoundPropertiesFromForm(PropertyDtoFormVersion dto, Integer pageCount)
+            throws IOException, InvalidFormatException {
         List<PropertyDto> propertyList;
 
-        propertyList = getPropertiesByLocations(dto);
+        propertyList = getPropertiesByLocations(dto, pageCount); // request
 
         SearchRecord searchRecord = new SearchRecord();
         PropertyDto searchProperty = PropertyDtoFormVersionToPropertyDto.toPropertyDto(dto);
@@ -110,7 +104,7 @@ public class WordService {
         return new byte[0];
     }
 
-    private List<PropertyDto> getPropertiesByLocations(PropertyDtoFormVersion dto) {
+    private List<PropertyDto> getPropertiesByLocations(PropertyDtoFormVersion dto, Integer pageCount) {
         // Executor for parallel requests
         ExecutorService executorService = Executors.newFixedThreadPool(dto.getNeighbourLocations().size() + 1);
 
@@ -121,29 +115,31 @@ public class WordService {
         try {
             // First, search for properties in the main location
             List<PropertyDto> mainLocationProperties = imotBGService.getProperty(1, dto.getPropertyType(),
-                dto.getCity(), dto.getMainLocation(), dto.getPropertySize());
+                    dto.getCity(), dto.getMainLocation(), dto.getPropertySize(), dto.getPropertyConstructionType()); // request for main location
             finalPropertyList.addAll(mainLocationProperties);
 
-            // If we already have 5 or more properties, return them
-            if (finalPropertyList.size() >= 5) {
-                return getOnlyFiveProperties(finalPropertyList);
+
+
+            // If we already have 15 or more properties, return them
+            if (finalPropertyList.size() >= pageCount) {
+                return getOnlyGivenCountProperties(finalPropertyList, pageCount);
             }
 
-            // If fewer than 5 properties are found, start searching in neighboring locations
+            // remove main location from neighbourLocations
+            dto.setNeighbourLocations(dto.getNeighbourLocations()
+                            .stream()
+                            .filter(e -> !e.equals(dto.getMainLocation()))
+                            .toList());
+
+            // If fewer than 15 properties are found, start searching in neighboring locations
             for (String location : dto.getNeighbourLocations()) {
                 CompletableFuture<List<PropertyDto>> future = CompletableFuture.supplyAsync(
-                    () -> imotBGService.getProperty(1, dto.getPropertyType(), dto.getCity(), location,
-                        dto.getPropertySize()), executorService);
-                futures.add(future);
-            }
+                        () -> imotBGService.getProperty(1, dto.getPropertyType(), dto.getCity(), location,
+                                dto.getPropertySize(), dto.getPropertyConstructionType()), executorService);
 
-            // Wait for neighbor location futures to complete and aggregate results
-            for (CompletableFuture<List<PropertyDto>> future : futures) {
-                List<PropertyDto> result = future.get(); // Block until each future completes
-                finalPropertyList.addAll(result);
+                finalPropertyList.addAll(future.get());
 
-                // Stop as soon as we have 5 or more properties
-                if (finalPropertyList.size() >= 5) {
+                if (finalPropertyList.size() >= pageCount) {
                     break;
                 }
             }
@@ -155,25 +151,25 @@ public class WordService {
             executorService.shutdown();
         }
 
-        // Return only the first 5 properties
-        return getOnlyFiveProperties(finalPropertyList);
+        // Return only the first 15 properties
+        return getOnlyGivenCountProperties(finalPropertyList, pageCount);
     }
 
 
-    private static List<PropertyDto> getOnlyFiveProperties(List<PropertyDto> propertyList) {
-        if (propertyList.size() > 5) {
-            List<PropertyDto> propertyDtoListOfSize5 = new ArrayList<>();
-            for (int i = 0; i < 5; i++) {
-                propertyDtoListOfSize5.add(propertyList.get(i));
+    private static List<PropertyDto> getOnlyGivenCountProperties(List<PropertyDto> propertyList, Integer pageCount) {
+        if (propertyList.size() > pageCount) {
+            List<PropertyDto> propertyDtoListOfGivenSize = new ArrayList<>();
+            for (int i = 0; i < pageCount; i++) {
+                propertyDtoListOfGivenSize.add(propertyList.get(i));
             }
-            return propertyDtoListOfSize5;
+            return propertyDtoListOfGivenSize;
         } else {
             return propertyList;
         }
     }
 
     public byte[] createWordFileWithFoundPropertiesFromPdf(MultipartFile multipartFile)
-        throws IOException, InvalidFormatException {
+            throws IOException, InvalidFormatException {
         // [foundProperties.. , searchProperty]
 
         List<PropertyDto> propertyList = pdfReaderService.getPropertiesBySearchCriteria(multipartFile);
@@ -185,6 +181,7 @@ public class WordService {
             searchRecord.setFile(null);
             searchRecord.setTimestamp(LocalDateTime.now());
             searchRecordRepository.save(searchRecord);
+
 
             return generatedWord;
         }
@@ -207,10 +204,12 @@ public class WordService {
 
         XWPFDocument document = new XWPFDocument();
 
+        setLandscapeOrientationToPage(document);
+
         setLogoAsHeaderLine(document);
         setCreatedByAndCreatedForLine(document);
 
-        XWPFTable table = document.createTable(17, 10);
+        XWPFTable table = document.createTable(25, 10);
         table.setWidth("100%");
 
         int[] rowIndexToFillBackgroundColor = {0, 3, 8};
@@ -235,6 +234,24 @@ public class WordService {
         document.close();
 
         return outputStream.toByteArray();
+    }
+
+    private static void setLandscapeOrientationToPage(XWPFDocument document) {
+        CTBody body = document.getDocument().getBody();
+
+        if (!body.isSetSectPr()) {
+            body.addNewSectPr();
+        }
+        CTSectPr section = body.getSectPr();
+
+        if(!section.isSetPgSz()) {
+            section.addNewPgSz();
+        }
+        CTPageSz pageSize = section.getPgSz();
+
+        pageSize.setOrient(STPageOrientation.LANDSCAPE);
+        pageSize.setW(BigInteger.valueOf(15840));
+        pageSize.setH(BigInteger.valueOf(12240));
     }
 
     private static void setTextToMergedCellsRow(int rowIndex, XWPFTable table) {
@@ -270,8 +287,8 @@ public class WordService {
             dataRow.getCell(6).setText(propertyDto.getHasGarage());
             dataRow.getCell(7).setText(propertyDto.getFloorInfo());
             dataRow.getCell(8).setText(
-                propertyDto.getPublicationDateAndTime() != null ? propertyDto.getPublicationDateAndTime().toString()
-                    : "");
+                    propertyDto.getPublicationDateAndTime() != null ? propertyDto.getPublicationDateAndTime().toString()
+                            : "");
             dataRow.getCell(9).setText(propertyDto.getPrice());
             i.getAndIncrement();
         });
@@ -300,8 +317,8 @@ public class WordService {
 
     private static XWPFHyperlinkRun createHyperlinkRun(XWPFParagraph paragraph, String uri) {
         String rId = paragraph.getDocument().getPackagePart().addExternalRelationship(
-            uri,
-            XWPFRelation.HYPERLINK.getRelation()
+                uri,
+                XWPFRelation.HYPERLINK.getRelation()
         ).getId();
 
         CTHyperlink cthyperLink = paragraph.getCTP().addNewHyperlink();
@@ -309,9 +326,9 @@ public class WordService {
         cthyperLink.addNewR();
 
         return new XWPFHyperlinkRun(
-            cthyperLink,
-            cthyperLink.getRArray(0),
-            paragraph
+                cthyperLink,
+                cthyperLink.getRArray(0),
+                paragraph
         );
     }
 
@@ -319,9 +336,9 @@ public class WordService {
         XWPFParagraph textParagraph = document.createParagraph();
         XWPFRun textRun = textParagraph.createRun();
         textRun.setText(
-            "За: .......................................................................................................................................................................................................................");
+                "За: ......................................................................................................................................................................................................................................");
         textRun.setText(
-            " Съставил: ......................................................................................................................................................");
+                " Съставил: ......................................................................................................................................................");
     }
 
     private void setLogoAsHeaderLine(XWPFDocument document) throws IOException, InvalidFormatException {
@@ -330,7 +347,7 @@ public class WordService {
             XWPFParagraph logoParagraph = document.createParagraph();
             XWPFRun logoRun = logoParagraph.createRun();
             logoRun.addPicture(logoStream, Document.PICTURE_TYPE_PNG, "era-logo.png",
-                Units.toEMU(100), Units.toEMU(50));
+                    Units.toEMU(100), Units.toEMU(100));
             logoRun.setFontSize(38);
             logoRun.setText("Сравнителна оценка на пазара");
         }

@@ -4,6 +4,11 @@ public enum ConstructionType {
     UNKNOWN("Няма информация"),
     PANEL("Панел"),
     TUHLA("Тухла");
+
+    public String getValue() {
+        return value;
+    }
+
     private String value;
 
     ConstructionType(String value) {
