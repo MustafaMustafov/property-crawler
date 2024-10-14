@@ -45,7 +45,7 @@ public class ImotBGService {
     private static final String IMOT_BG_URL = "https://www.imot.bg/pcgi/imot.cgi";
 
     public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
-                                         int propertySize) {
+                                         int propertySize, String propertyConstructionType) {
         List<PropertyDto> propertyList = new ArrayList<>();
 
         try {
@@ -72,7 +72,11 @@ public class ImotBGService {
             e.printStackTrace();
         }
 
-        return propertyList;
+
+        return propertyList.stream()
+                .filter(property -> property.getConstructionType().equals(propertyConstructionType))
+                .toList();
+
     }
 
     private Set<String> extractHrefs(String html) {
@@ -84,7 +88,7 @@ public class ImotBGService {
             String href = link.attr("href");
             if (href.contains("act=5&adv=") && !hrefs.contains(href) && isPageContentValid(href)) {
                 hrefs.add(href);
-                if (hrefs.size() == 5) {
+                if (hrefs.size() == 30) {
                     break;
                 }
             }
@@ -166,7 +170,9 @@ public class ImotBGService {
                         extractPricePerSqM(doc, property);
                         extractDetails(doc, property);
                         extractDescription(doc, property);
+                        extractConstructionType(doc, property);
                         property.setPropertyUrl(urlToVisit);
+
 
                         propertyList.add(property);
                     }
@@ -293,6 +299,7 @@ public class ImotBGService {
 
     private Year extractConstructionYear(Document doc) {
         Element adParamsDiv = doc.select("div.adParams").first();
+
         if (adParamsDiv != null) {
             String text = adParamsDiv.select("div").last().text();
             if (text.matches(".*\\b\\d{4}\\b.*")) {
@@ -302,4 +309,20 @@ public class ImotBGService {
         }
         return null;
     }
+
+    private void extractConstructionType(Document doc, Property property) {
+        Pattern pattern = Pattern.compile("Строителство:\\s*(Тухла|Панел)?(?:,\\s*(\\d{4})\\s*г\\.)?");
+
+        Element adParamsDiv = doc.select("div.adParams").first();
+        if (adParamsDiv != null) {
+            String text = adParamsDiv.select("div").last().text();
+            Matcher matcher = pattern.matcher(text);
+
+            if (matcher.find()) {
+                String type = matcher.group(1);
+                property.setConstructionType(ConstructionType.getConstructionTypeByValue(type));
+            }
+        }
+    }
 }
+

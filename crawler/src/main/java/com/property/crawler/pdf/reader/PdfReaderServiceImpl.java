@@ -31,7 +31,7 @@ public class PdfReaderServiceImpl implements PdfReaderService {
             if (propertyData != null) {
                 List<PropertyDto> propertyList = imotBGService.getProperty(1, propertyData.getPropertyType(),
                     propertyData.getCity(), propertyData.getMainLocation(),
-                    propertyData.getPropertySize());
+                    propertyData.getPropertySize(), propertyData.getConstructionType());
 
                 propertyList.add(propertyData);
                 return propertyList;
