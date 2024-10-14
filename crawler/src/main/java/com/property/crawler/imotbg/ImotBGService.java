@@ -5,21 +5,8 @@ import com.property.crawler.enums.ConstructionType;
 import com.property.crawler.enums.PropertyType;
 import com.property.crawler.property.Property;
 import com.property.crawler.property.PropertyDto;
-import com.property.crawler.property.PropertySearchDto;
+import com.property.crawler.property.PropertySearchDtoNewRequest;
 import com.property.crawler.property.mapper.PropertyMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +23,18 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -44,13 +43,15 @@ public class ImotBGService {
     public static final String WINDOWS_1251 = "windows-1251";
     private static final String IMOT_BG_URL = "https://www.imot.bg/pcgi/imot.cgi";
 
-    public List<PropertyDto> getProperty(int actionTypeId, int propertyTypeId, String city, String location,
-                                         int propertySize, String propertyConstructionType) {
+    public List<PropertyDto> getProperty(int propertyTypeId, String city, String location,
+        int propertySize, String propertyConstructionType, boolean hasGarage, boolean hasParkingSpot) {
         List<PropertyDto> propertyList = new ArrayList<>();
 
         try {
-            String searchUrl = buildSearchPropertyUrl(IMOT_BG_URL,
-                    new PropertySearchDto(actionTypeId, propertyTypeId, City.getByCityName(city), location, propertySize));
+
+            String searchUrl = buildSearchPropertyUrlForNewTemplate(IMOT_BG_URL,
+                new PropertySearchDtoNewRequest(propertyTypeId, propertySize, City.getByCityName(city), location,
+                    propertyConstructionType, hasGarage, hasParkingSpot));
 
             HttpGet httpGet = new HttpGet(searchUrl);
 
@@ -63,7 +64,7 @@ public class ImotBGService {
                 if (entity != null) {
                     String htmlContent = getHtmlContentFromHttpEntity(entity);
                     Set<String> hrefs = extractHrefs(htmlContent);
-                    propertyList = getPropertyInformations(hrefs, propertyTypeId);
+                    propertyList = getPropertyInformations(hrefs, propertyTypeId, hasGarage || hasParkingSpot);
                 }
             } finally {
                 response.close();
@@ -72,11 +73,7 @@ public class ImotBGService {
             e.printStackTrace();
         }
 
-
-        return propertyList.stream()
-                .filter(property -> property.getConstructionType().equals(propertyConstructionType))
-                .toList();
-
+        return propertyList;
     }
 
     private Set<String> extractHrefs(String html) {
@@ -102,7 +99,7 @@ public class ImotBGService {
 
         try {
             httpGet.setHeader("User-Agent",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
             // execute request
             CloseableHttpResponse response = httpClient.execute(httpGet);
             HttpEntity entity = response.getEntity();
@@ -136,12 +133,13 @@ public class ImotBGService {
         return HttpClients.custom().build();
     }
 
-    private String buildSearchPropertyUrl(String url, PropertySearchDto propertySearchDto)
-            throws UnsupportedEncodingException {
+    private String buildSearchPropertyUrlForNewTemplate(String url, PropertySearchDtoNewRequest propertySearchDto)
+        throws UnsupportedEncodingException {
         return url + "?" + propertySearchDto.toQueryString();
     }
 
-    public List<PropertyDto> getPropertyInformations(Set<String> urls, int propertyTypeId) {
+    public List<PropertyDto> getPropertyInformations(Set<String> urls, int propertyTypeId,
+        boolean hasGarageOrParkingSpot) {
         List<Property> propertyList = new ArrayList<>();
 
         CloseableHttpClient httpClient = getHttpClient();
@@ -153,7 +151,7 @@ public class ImotBGService {
 
                 HttpGet httpGet = new HttpGet(urlToVisit);
                 httpGet.setHeader("User-Agent",
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
 
                 try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                     HttpEntity entity = response.getEntity();
@@ -172,7 +170,9 @@ public class ImotBGService {
                         extractDescription(doc, property);
                         extractConstructionType(doc, property);
                         property.setPropertyUrl(urlToVisit);
-
+                        if (hasGarageOrParkingSpot) {
+                            property.setGarageOrParking(true);
+                        }
 
                         propertyList.add(property);
                     }
@@ -197,10 +197,10 @@ public class ImotBGService {
             String infoText = infoElement.text();
             if (!isUpdated) {
                 dateTimePattern = Pattern.compile(
-                        "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+                    "Публикувана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
             } else {
                 dateTimePattern = Pattern.compile(
-                        "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
+                    "Коригирана в (\\d{2}:\\d{2}) на (\\d{2}) (\\p{IsCyrillic}+), (\\d{4}) год.");
             }
             Matcher matcher = dateTimePattern.matcher(infoText);
 

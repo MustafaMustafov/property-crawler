@@ -29,9 +29,9 @@ public class PdfReaderServiceImpl implements PdfReaderService {
         try (PDDocument document = PDDocument.load(new ByteArrayInputStream(pdfContent))) {
             PropertyDto propertyData = extractPropertyInformationToSearch(document);
             if (propertyData != null) {
-                List<PropertyDto> propertyList = imotBGService.getProperty(1, propertyData.getPropertyType(),
+                List<PropertyDto> propertyList = imotBGService.getProperty(propertyData.getPropertyType(),
                     propertyData.getCity(), propertyData.getMainLocation(),
-                    propertyData.getPropertySize(), propertyData.getConstructionType());
+                    propertyData.getPropertySize(), propertyData.getConstructionType(), propertyData.getHasGarage().equalsIgnoreCase("да") ? true : false,  false);
 
                 propertyList.add(propertyData);
                 return propertyList;

@@ -22,6 +22,7 @@ public class PropertyDtoFormVersion {
     private int propertySizeClean;
     private int numberOfRooms;
     private boolean hasGarage;
+    private boolean hasParkingSpot;
     private String orientation;
     private int price;
 
