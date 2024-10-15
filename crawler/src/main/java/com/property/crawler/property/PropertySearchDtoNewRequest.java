@@ -21,6 +21,8 @@ public class PropertySearchDtoNewRequest {
     private static final int ACTIONS = 1;
     private static final int F_1 = 1;
     private static final int F_4 = 1;
+    private static final String WITH_GARAGE_ENCODED = "%D1+%E3%E0%F0%E0%E6";
+    private static final String WITH_PARKING_SPOT_ENCODED = "%D1+%EF%E0%F0%EA%E8%ED%E3";
     private static final String CURRENCY = "EUR";
     private int propertyType;
     private int propertySize;
@@ -29,6 +31,7 @@ public class PropertySearchDtoNewRequest {
     private String constructionType;
     private boolean hasGarage;
     private boolean hasParkingSpot;
+
 
     public PropertySearchDtoNewRequest(int propertyType, int propertySize,
         String city, String location, String constructionType, boolean hasGarage, boolean hasParkingSpot) {
@@ -59,8 +62,8 @@ public class PropertySearchDtoNewRequest {
         sb.append(
             constructionType.equalsIgnoreCase("панел") ? "f61=" + URLEncoder.encode(constructionType, WINDOWS_1251)
                 : "f62=" + URLEncoder.encode(constructionType, WINDOWS_1251)).append("&");
-        sb.append("f70=").append(hasGarage ? "%D1+%E3%E0%F0%E0%E6" : "").append("&");
-        sb.append("f71=").append(hasParkingSpot ? "%D1+%EF%E0%F0%EA%E8%ED%E3" : "").append("&");
+        sb.append("f70=").append(hasGarage ? WITH_GARAGE_ENCODED : "").append("&");
+        sb.append("f71=").append(hasParkingSpot ? WITH_PARKING_SPOT_ENCODED : "").append("&");
 
         return sb.toString();
     }
