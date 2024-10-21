@@ -72,40 +72,79 @@
         </div>
 
         <!-- Вид имот -->
-        <div class="mb-3">
-            <label for="propertyType" class="form-label">Вид имот:</label>
-            <select id="propertyType" name="propertyType" class="form-select" th:field="*{propertyType}" required>
-                <option value="1">1-СТАЕН</option>
-                <option value="2">2-СТАЕН</option>
-                <option value="3">3-СТАЕН</option>
-                <option value="4">4-СТАЕН</option>
-                <option value="5">МНОГОСТАЕН</option>
-                <option value="6">МЕЗОНЕТ</option>
-                <option value="7">ОФИС</option>
-                <option value="8">АТЕЛИЕ, ТАВАН</option>
-                <option value="9">ЕТАЖ ОТ КЪЩА</option>
-                <option value="10">КЪЩА</option>
-                <option value="11">ВИЛА</option>
-                <option value="12">МАГАЗИН</option>
-                <option value="13">ЗАВЕДЕНИЕ</option>
-                <option value="14">СКЛАД</option>
-                <option value="15">ГАРАЖ, ПАРКОМЯСТО</option>
-                <option value="16">ПРОМ. ПОМЕЩЕНИЕ</option>
-                <option value="17">ХОТЕЛ</option>
-                <option value="18">ПАРЦЕЛ</option>
-                <option value="19">ЗЕМЕДЕЛСКА ЗЕМЯ</option>
-            </select>
+<!--        <div class="mb-3">-->
+<!--            <label for="propertyType" class="form-label">Вид имот:</label>-->
+<!--            <select id="propertyType" name="propertyType" class="form-select" th:field="*{propertyType}" required>-->
+<!--                <option value="1">1-СТАЕН</option>-->
+<!--                <option value="2">2-СТАЕН</option>-->
+<!--                <option value="3">3-СТАЕН</option>-->
+<!--                <option value="4">4-СТАЕН</option>-->
+<!--                <option value="5">МНОГОСТАЕН</option>-->
+<!--                <option value="6">МЕЗОНЕТ</option>-->
+<!--                <option value="7">ОФИС</option>-->
+<!--                <option value="8">АТЕЛИЕ, ТАВАН</option>-->
+<!--                <option value="9">ЕТАЖ ОТ КЪЩА</option>-->
+<!--                <option value="10">КЪЩА</option>-->
+<!--                <option value="11">ВИЛА</option>-->
+<!--                <option value="12">МАГАЗИН</option>-->
+<!--                <option value="13">ЗАВЕДЕНИЕ</option>-->
+<!--                <option value="14">СКЛАД</option>-->
+<!--                <option value="15">ГАРАЖ, ПАРКОМЯСТО</option>-->
+<!--                <option value="16">ПРОМ. ПОМЕЩЕНИЕ</option>-->
+<!--                <option value="17">ХОТЕЛ</option>-->
+<!--                <option value="18">ПАРЦЕЛ</option>-->
+<!--                <option value="19">ЗЕМЕДЕЛСКА ЗЕМЯ</option>-->
+<!--            </select>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Тип строителство &ndash;&gt;-->
+<!--        <div class="mb-3">-->
+<!--            <label for="buildingType" class="form-label">Тип строителство:</label>-->
+<!--            <select id="buildingType" name="buildingType" class="form-select" th:field="*{propertyConstructionType}">-->
+<!--                <option value="" selected></option>-->
+<!--                <option value="Панел">Панел</option>-->
+<!--                <option value="Тухла">Тухла</option>-->
+<!--            </select>-->
+<!--        </div>-->
+
+        <div class="row mb-3">
+            <!-- Property Type -->
+            <div class="col-md-6">
+                <label for="propertyType" class="form-label">Вид имот:</label>
+                <select id="propertyType" name="propertyType" class="form-select" th:field="*{propertyType}" required>
+                    <option value="1">1-СТАЕН</option>
+                    <option value="2">2-СТАЕН</option>
+                    <option value="3">3-СТАЕН</option>
+                    <option value="4">4-СТАЕН</option>
+                    <option value="5">МНОГОСТАЕН</option>
+                    <option value="6">МЕЗОНЕТ</option>
+                    <option value="7">ОФИС</option>
+                    <option value="8">АТЕЛИЕ, ТАВАН</option>
+                    <option value="9">ЕТАЖ ОТ КЪЩА</option>
+                    <option value="10">КЪЩА</option>
+                    <option value="11">ВИЛА</option>
+                    <option value="12">МАГАЗИН</option>
+                    <option value="13">ЗАВЕДЕНИЕ</option>
+                    <option value="14">СКЛАД</option>
+                    <option value="15">ГАРАЖ, ПАРКОМЯСТО</option>
+                    <option value="16">ПРОМ. ПОМЕЩЕНИЕ</option>
+                    <option value="17">ХОТЕЛ</option>
+                    <option value="18">ПАРЦЕЛ</option>
+                    <option value="19">ЗЕМЕДЕЛСКА ЗЕМЯ</option>
+                </select>
+            </div>
+
+            <!-- Building Type -->
+            <div class="col-md-6">
+                <label for="buildingType" class="form-label">Тип строителство:</label>
+                <select id="buildingType" name="buildingType" class="form-select" th:field="*{propertyConstructionType}">
+                    <option value="" selected></option>
+                    <option value="Панел">Панел</option>
+                    <option value="Тухла">Тухла</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Тип строителство -->
-        <div class="mb-3">
-            <label for="buildingType" class="form-label">Тип строителство:</label>
-            <select id="buildingType" name="buildingType" class="form-select" th:field="*{propertyConstructionType}">
-                <option value="" selected></option>
-                <option value="Панел">Панел</option>
-                <option value="Тухла">Тухла</option>
-            </select>
-        </div>
 
         <div class="row mb-3">
             <!-- Чиста площ -->
@@ -125,18 +164,19 @@
             </div>
         </div>
 
+        <div class="row mb-3">
         <!-- Гараж -->
-        <div class="form-check mb-3">
+        <div class="col-md-6">
             <input class="form-check-input" type="checkbox" id="hasGarage" name="hasGarage" th:field="*{hasGarage}">
             <label class="form-check-label" for="hasGarage">Има ли гараж</label>
         </div>
 
         <!-- Паркомясто -->
-        <div class="form-check mb-3">
+        <div class="col-md-6">
             <input class="form-check-input" type="checkbox" id="hasParkingSpot" name="hasParkingSpot" th:field="*{hasParkingSpot}">
             <label class="form-check-label" for="hasParkingSpot">Има ли паркомясто</label>
         </div>
-
+        </div>
         <!-- Цена -->
         <div class="row mb-3">
             <div class="col-md-6">
