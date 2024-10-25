@@ -20,7 +20,8 @@ public enum PropertyType {
     PROM_POMESHENIE(16, "ПРОМ. ПОМЕЩЕНИЕ"),
     HOTEL(17, "ХОТЕЛ"),
     PARCEL(18, "ПАРЦЕЛ"),
-    ZEMEDELSKA_ZEMYA(19, "ЗЕМЕДЕЛСКА ЗЕМЯ");
+    ZEMEDELSKA_ZEMYA(19, "ЗЕМЕДЕЛСКА ЗЕМЯ"),
+    BIZNES_IMOT(20, "БИЗНЕС ИМОТ");
 
     private final int id;
     private final String value;
