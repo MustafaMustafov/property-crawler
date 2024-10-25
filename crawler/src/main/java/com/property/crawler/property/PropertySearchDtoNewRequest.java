@@ -57,7 +57,7 @@ public class PropertySearchDtoNewRequest {
         sb.append("f30=").append(CURRENCY).append("&");
         sb.append("f26=").append(propertySize * 0.8).append("&");
         sb.append("f27=").append(propertySize * 1.2).append("&");
-        sb.append("f28=").append(URLEncoder.encode(city, WINDOWS_1251)).append("&");
+        sb.append("f38=").append(URLEncoder.encode(city, WINDOWS_1251)).append("&");
         sb.append("f40=").append(URLEncoder.encode(location, WINDOWS_1251)).append("&");
         sb.append(
             constructionType.equalsIgnoreCase("панел") ? "f61=" + URLEncoder.encode(constructionType, WINDOWS_1251)
