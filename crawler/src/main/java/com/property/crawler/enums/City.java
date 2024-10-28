@@ -3,33 +3,33 @@ package com.property.crawler.enums;
 import java.util.Objects;
 
 public enum City {
-    BLAGOEVGRAD("Благоевград"),
-    BURGAS("Бургас"),
-    VARNA("Варна"),
-    VELIKO_TURNOVO("Велико Търново"),
-    VIDIN("Видин"),
-    VRATSA("Враца"),
-    GABROVO("Габрово"),
-    DOBRICH("Добрич"),
-    KARDZHALI("Кърджали"),
-    KYUSTENDIL("Кюстендил"),
-    LOVECH("Ловеч"),
-    MONTANA("Монтана"),
-    PAZARDZHIK("Пазарджик"),
-    PERNIK("Перник"),
-    PLEVEN("Плевен"),
-    PLOVDIV("Пловдив"),
-    RAZGRAD("Разград"),
-    RUSE("Русе"),
-    SILISTRA("Силистра"),
-    SLIVEN("Сливен"),
-    SMOLYAN("Смолян"),
-    SOFIA("София"),
-    STARA_ZAGORA("Стара Загора"),
-    TARGOVISHTE("Търговище"),
-    HASKOVO("Хасково"),
-    SHUMEN("Шумен"),
-    YAMBOL("Ямбол");
+    BLAGOEVGRAD("град Благоевград"),
+    BURGAS("град Бургас"),
+    VARNA("град Варна"),
+    VELIKO_TURNOVO("град Велико Търново"),
+    VIDIN("град Видин"),
+    VRATSA("град Враца"),
+    GABROVO("град Габрово"),
+    DOBRICH("град Добрич"),
+    KARDZHALI("град Кърджали"),
+    KYUSTENDIL("град Кюстендил"),
+    LOVECH("град Ловеч"),
+    MONTANA("град Монтана"),
+    PAZARDZHIK("град Пазарджик"),
+    PERNIK("град Перник"),
+    PLEVEN("град Плевен"),
+    PLOVDIV("град Пловдив"),
+    RAZGRAD("град Разград"),
+    RUSE("град Русе"),
+    SILISTRA("град Силистра"),
+    SLIVEN("град Сливен"),
+    SMOLYAN("град Смолян"),
+    SOFIA("град София"),
+    STARA_ZAGORA("град Стара Загора"),
+    TARGOVISHTE("град Търговище"),
+    HASKOVO("град Хасково"),
+    SHUMEN("град Шумен"),
+    YAMBOL("град Ямбол");
 
     private final String cityName;
 
@@ -43,7 +43,7 @@ public enum City {
 
     public static String getByCityName(String cityName) {
         for (City city : City.values()) {
-            if (Objects.equals(city.cityName, cityName)) {
+            if (Objects.equals(city.cityName.substring(5), cityName)) {
                 return city.getCityName();
             }
         }
