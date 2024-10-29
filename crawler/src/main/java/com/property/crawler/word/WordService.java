@@ -101,6 +101,12 @@ public class WordService {
                 dto.getCity(), dto.getMainLocation(), dto.getPropertySize(), dto.getPropertyConstructionType(),
                 dto.isHasGarage(), dto.isHasParkingSpot());
 
+        // remove main location from neighbourLocations
+        dto.setNeighbourLocations(dto.getNeighbourLocations()
+                .stream()
+                .filter(e -> !e.equals(dto.getMainLocation()))
+                .toList());
+
         if (foundPropertiesByMainLocation.size() >= pageCount || dto.getNeighbourLocations().isEmpty()) {
             return getOnlyGivenCountProperties(foundPropertiesByMainLocation, pageCount);
         } else {
